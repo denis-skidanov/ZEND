@@ -50,7 +50,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 	{
 		$name = $this->_camelCaseToUnderscoreLowerCase($name);
 		
-		if (!array_key_exists($name, $this->_fields)) {
+		if (!array_key_exists($name, $this->_columns)) {
 			if (!$this->_ignoreUndefinedNames) {
 				// If field name not found - error
 				throw new Exception("Invalid set property name '$name'", 500);
@@ -59,7 +59,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 			return;
 		}
 		
-		$this->_fields[$name] = $value;
+		$this->_columns[$name] = $value;
 		return $this;
 	}
 	
@@ -74,7 +74,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 	{
 		$name = $this->_camelCaseToUnderscoreLowerCase($name);
 		
-		if (!array_key_exists($name, $this->_fields)) {
+		if (!array_key_exists($name, $this->_columns)) {
 			if (!$this->_ignoreUndefinedNames) {
 				// If field name not found - error
 				throw new Exception("Invalid get property name '$name'", 500);				
@@ -83,7 +83,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 			return;
 		}		
 		
-		return $this->_fields[$name];
+		return $this->_columns[$name];
 	}
 	
 	/**

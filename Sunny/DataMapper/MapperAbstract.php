@@ -15,17 +15,10 @@ abstract class Sunny_DataMapper_MapperAbstract
      * @param string $name
      * @throws Exception
      */
-	protected function _formatModelName($name)
+	protected function _formatEntityName($name)
     {
-       	if ('Mapper' != substr($name, -6)) {
-       		throw new Exception("Invalid class name '$name', must have suffix 'Mapper'", 500);
-       	}
-       	
        	$parts = explode('_', $name);
-       	$class = $parts[count($parts) - 1];
-       	$class = substr($class, 0, strlen($class) - 6);
-       	$parts[count($parts) - 1] = $class;
-       	
+       	$parts[count($parts) - 2] = 'Entity';
        	return implode('_', $parts);
     }
     
@@ -37,15 +30,8 @@ abstract class Sunny_DataMapper_MapperAbstract
      */
     protected function _formatDbTableName($name)
     {
-       	if ('Mapper' != substr($name, -6)) {
-       		throw new Exception("Invalid class name '$name', must have suffix 'Mapper'", 500);
-       	}
-    	
        	$parts = explode('_', $name);
-       	$class = $parts[count($parts) - 1];
-       	$parts[count($parts) - 1] = 'DbTable';
-       	$parts[] = substr($class, 0, strlen($class) - 6);
-       	
+       	$parts[count($parts) - 2] = 'DbTable';
        	return implode('_', $parts);
     }
     
@@ -113,11 +99,11 @@ abstract class Sunny_DataMapper_MapperAbstract
      */
     public function create(array $data = array())
     {
-    	$modelName = $this->_formatModelName(get_class($this));
+    	$modelName = $this->_formatEntityName(get_class($this));
     	$model = new $modelName(array('colNames' => $this->getDbTable()->info(Zend_Db_Table_Abstract::COLS)));
     	
     	if (!empty($data)) {
-    		$model->setupColumns($data);
+    		$model->setupColData($data);
     	}
     	
     	return $model;
@@ -133,11 +119,6 @@ abstract class Sunny_DataMapper_MapperAbstract
      */
     public function save($model)
 	{
-		// Check if model is valid object
-		if (!$model instanceof Application_Model_Abstract) {
-			throw new Exception("Invalid data model provided for save operation", 500);
-		}
-		
 		// Prepare data
 		$data = $model->toArray();
 		$id = $model->getId();
