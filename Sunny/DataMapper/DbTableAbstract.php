@@ -32,5 +32,33 @@ abstract class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		return strtolower($filter->filter($name));
 	}
 	
-	// TODO: automatic build reference tree
+	/**
+	 * Get total rows count
+	 * 
+	 * @param string|array|Zend_Db_Table_Select $where OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
+	 * @return integer
+	 */
+	public function fetchCount($where = null)
+	{
+        if (!($where instanceof Zend_Db_Table_Select)) {
+            $select = $this->select(true);
+
+            if ($where !== null) {
+                $this->_where($select, $where);
+            }
+        } else {
+            $select = $where;
+        }
+        
+        // Reset parts
+        $select->reset(Zend_Db_Table_Select::LIMIT_COUNT);
+        $select->reset(Zend_Db_Table_Select::LIMIT_OFFSET);
+        $select->reset(Zend_Db_Table_Select::COLUMNS);
+        
+        $select->columns(new Zend_Db_Expr(
+        	'COUNT(' . $this->getAdapter()->quoteIdentifier(implode(',', $this->info(self::PRIMARY))) . ')'
+        ));
+        
+        return $this->getAdapter()->fetchOne($select);
+	}
 }

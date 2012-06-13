@@ -217,4 +217,35 @@ abstract class Sunny_DataMapper_MapperAbstract
 		// Return array of rows
 		return $entries;
 	}
+	
+	/**
+	 * Fetches row count from current table
+	 * @see Sunny_DataMapper_DbTableAbstract for more information about arguments
+	 * 
+	 * @param mixed $where
+	 */
+	public function fetchCount($where = null)
+	{
+		return $this->getDbTable()->fetchCount($where);
+	}
+	
+	/**
+	 * Fetches rowset by page number instead of offset
+	 * @see Sunny_DataMapper_MapperAbstract::fetchAll()
+	 * @see Zend_Db_Table_Abstract::fetchAll()
+	 * 
+	 * @param mixed $where
+	 * @param mixed $order
+	 * @param integer $count
+	 * @param integer $page
+	 */
+	public function fetchPage($where = null, $order = null, $count = null, $page = null)
+	{
+		$offset = 0;
+		if (null !== $count && null !== $page) {
+			$offset = $page * $count - $count;
+		}
+		
+		return $this->fetchAll($where, $order, $count, $page);
+	}
 }
