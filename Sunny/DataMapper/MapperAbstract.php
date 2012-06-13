@@ -246,6 +246,6 @@ abstract class Sunny_DataMapper_MapperAbstract
 			$offset = $page * $count - $count;
 		}
 		
-		return $this->fetchAll($where, $order, $count, $page);
+		return $this->fetchAll($where, $order, $count, $offset);
 	}
 }
