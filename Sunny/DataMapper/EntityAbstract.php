@@ -1,6 +1,6 @@
 <?php
 
-abstract class Sunny_DataMapper_EntityAbstract implements ArrayAccess//, JsonSerializable
+abstract class Sunny_DataMapper_EntityAbstract
 {
 	/**
 	 * Internal data container
@@ -169,55 +169,5 @@ abstract class Sunny_DataMapper_EntityAbstract implements ArrayAccess//, JsonSer
 	public function toArray()
 	{
 		return (array) $this->_columns;
-	}
-	
-	/**
-	 * Check if param exists
-	 * @see ArrayAccess
-	 * 
-	 * @param mixed $offset
-	 */
-	public function offsetExists($offset)
-	{
-		return isset($this->_columns[$offset]);
-	}
-	
-	/**
-	 * Get parameter value by offset name
-	 * @see ArrayAccess
-	 * 
-	 * @param mixed $offset
-	 */
-	public function offsetGet($offset)
-	{
-		return $this->__get($offset);
-	}
-	
-	/**
-	 * Set parameter value by offset name
-	 * @see ArrayAccess
-	 * 
-	 * @param mixed $offset
-	 * @param mixed $value
-	 */
-	public function offsetSet($offset, $value)
-	{
-		$this->__set($offset, $value);
-	}
-	
-	/**
-	 * Unset now not available
-	 * 
-	 * @param mixed $offset
-	 * @throws Exception
-	 */
-	public function offsetUnset($offset)
-	{
-		throw new Exception("Entity parameter unset not available", 500);
-	}
-	
-	public function jsonSerialize()
-	{
-		return $this->_columns;
 	}
 }
