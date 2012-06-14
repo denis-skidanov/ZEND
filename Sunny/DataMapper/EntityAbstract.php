@@ -1,13 +1,20 @@
 <?php
 
-abstract class Sunny_DataMapper_EntityAbstract
+class Sunny_DataMapper_EntityAbstract
 {
 	/**
 	 * Internal data container
 	 * 
 	 * @var array
 	 */
-	protected $_columns = array();
+	protected $_data = array();
+	
+	/**
+	 * Internal entry identifier
+	 * 
+	 * @var string|integer
+	 */
+	protected $_identifier;
 	
 	/**
 	 * Ignore columns which not exists in model
@@ -50,7 +57,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 	{
 		$name = $this->_camelCaseToUnderscoreLowerCase($name);
 		
-		if (!array_key_exists($name, $this->_columns)) {
+		if (!array_key_exists($name, $this->_data)) {
 			if (!$this->_ignoreUndefinedNames) {
 				// If field name not found - error
 				throw new Exception("Invalid set property name '$name'", 500);
@@ -59,7 +66,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 			return;
 		}
 		
-		$this->_columns[$name] = $value;
+		$this->_data[$name] = $value;
 		return $this;
 	}
 	
@@ -74,7 +81,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 	{
 		$name = $this->_camelCaseToUnderscoreLowerCase($name);
 		
-		if (!array_key_exists($name, $this->_columns)) {
+		if (!array_key_exists($name, $this->_data)) {
 			if (!$this->_ignoreUndefinedNames) {
 				// If field name not found - error
 				throw new Exception("Invalid get property name '$name'", 500);				
@@ -83,7 +90,7 @@ abstract class Sunny_DataMapper_EntityAbstract
 			return;
 		}		
 		
-		return $this->_columns[$name];
+		return $this->_data[$name];
 	}
 	
 	/**
@@ -102,8 +109,8 @@ abstract class Sunny_DataMapper_EntityAbstract
 		
 		$prefix = '__' . substr(strtolower($name), 0, 3);		
 		switch ($prefix) {
-			case 'set':
-			case 'get':
+			case '__set':
+			case '__get':
 				array_unshift($arguments, substr($name, 3));
 				return call_user_func_array(array($this, $prefix), $arguments);
 			default:
@@ -124,27 +131,16 @@ abstract class Sunny_DataMapper_EntityAbstract
 		}
 		
 		// Setup columns names
-		if (isset($options['colNames']) && is_array($options['colNames'])) {
-			$this->setupColNames($options['colNames']);
+		if (isset($options['data'])) {
+			$this->setupData($options['data']);
+		}
+		
+		// Setup identifier value
+		if (isset($options['identifier'])) {
+			$this->setupIdentifier($options['identifier']);
 		}
 				
 		return $this;		
-	}
-	
-	/**
-	 * Setup columns names
-	 * 
-	 * @param array $columns
-	 */
-	public function setupColNames(array $colNames = array())
-	{
-		// Normalize columns list
-		$colNames = array_values($colNames);
-		
-		// Convert to internal data array
-		$this->_columns = array_fill_keys($colNames, null);
-		
-		return $this;
 	}
 	
 	/**
@@ -152,13 +148,31 @@ abstract class Sunny_DataMapper_EntityAbstract
 	 * 
 	 * @param array $colData
 	 */
-	public function setupColData(array $colData = array())
+	public function setupData(array $data)
 	{
-		foreach ($colData as $name => $value) {
-			$this->__set($name, $value);
-		}
-		
+		$this->_data = $data;
 		return $this;
+	}
+	
+	/**
+	 * Setup entry identifier
+	 * 
+	 * @param string|integer $identifier
+	 */
+	public function setupIdentifier($identifier)
+	{
+		$this->_identifier = $identifier;
+		return $this;
+	}
+	
+	/**
+	 * Get entry identifier value
+	 * 
+	 * @return string|integer identifier
+	 */
+	public function getIdentifier()
+	{
+		return $this->_identifier;
 	}
 	
 	/**
@@ -168,6 +182,6 @@ abstract class Sunny_DataMapper_EntityAbstract
 	 */
 	public function toArray()
 	{
-		return (array) $this->_columns;
+		return $this->_data;
 	}
 }

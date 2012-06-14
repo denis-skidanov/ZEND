@@ -10,7 +10,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	protected $_dbTable;
  
     /**
-     * Format model class name from mapper name
+     * Format entity class name from mapper name
      * 
      * @param string $name
      * @throws Exception
@@ -20,6 +20,19 @@ abstract class Sunny_DataMapper_MapperAbstract
        	$parts = explode('_', $name);
        	$parts[count($parts) - 2] = 'Entity';
        	return implode('_', $parts);
+    }
+    
+    /**
+    * Format collection class name from mapper name
+    *
+    * @param string $name
+    * @throws Exception
+    */
+    protected function _formatCollectionName($name)
+    {
+    	$parts = explode('_', $name);
+    	$parts[count($parts) - 2] = 'Collection';
+    	return implode('_', $parts);
     }
     
     /**
@@ -93,20 +106,32 @@ abstract class Sunny_DataMapper_MapperAbstract
     }
     
     /**
-     * Create new empty domain model
+     * Create new entity
      * 
+     * @param  array $data initial content data
      * @return Application_Model_Abstract object
      */
-    public function create(array $data = array())
+    public function createEntity(array $data)
     {
-    	$modelName = $this->_formatEntityName(get_class($this));
-    	$model = new $modelName(array('colNames' => $this->getDbTable()->info(Zend_Db_Table_Abstract::COLS)));
+    	$options = array(
+    		'data'       => $data,
+    		'identifier' => $data[current($this->getDbTable()->info(Zend_Db_Table_Abstract::PRIMARY))]
+    	);
     	
-    	if (!empty($data)) {
-    		$model->setupColData($data);
-    	}
-    	
-    	return $model;
+    	$entityName = $this->_formatEntityName(get_class($this));
+    	return new $entityName($options);
+    }
+    
+    /**
+     * Create new collection
+     * 
+     * @param array $data entries array
+     * @return object instance of Sunny_DataMapper_CollectionAbstract
+     */
+    public function createCollection(array $data = array())
+    {
+    	$collectionName = $this->_formatCollectionName(get_class($this));
+    	return new $collectionName(array('data' => $data));
     }
     
     /**
@@ -191,7 +216,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 		}
 		
 		// Store row data to model and return it
-		return $this->create($result->toArray());
+		return $this->createEntity($result->toArray());
 	}
 	
 	/**
@@ -202,6 +227,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	 * @param mixed $order
 	 * @param integer $count
 	 * @param integer $offset
+	 * @return Sunny_DataMapper_CollectionAbstract
 	 */
 	public function fetchAll($where = null, $order = null, $count = null, $offset = null)
 	{
@@ -209,13 +235,13 @@ abstract class Sunny_DataMapper_MapperAbstract
 		$rowSet = $this->getDbTable()->fetchAll($where, $order, $count, $offset);
 		
 		// Store every row to a new created model and store it to result array
-		$entries = array();
+		$collection = array();
 		foreach ($rowSet as $row) {
-			$entries[] = $this->create($row->toArray());
+			$collection[] = $this->createEntity($row->toArray());
 		}
 		
-		// Return array of rows
-		return $entries;
+		// Return rows
+		return $this->createCollection($collection);
 	}
 	
 	/**
@@ -223,6 +249,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	 * @see Sunny_DataMapper_DbTableAbstract for more information about arguments
 	 * 
 	 * @param mixed $where
+	 * @return integer count of rows
 	 */
 	public function fetchCount($where = null)
 	{
@@ -238,6 +265,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	 * @param mixed $order
 	 * @param integer $count
 	 * @param integer $page
+	 * @return Sunny_DataMapper_CollectionAbstract
 	 */
 	public function fetchPage($where = null, $order = null, $count = null, $page = null)
 	{
