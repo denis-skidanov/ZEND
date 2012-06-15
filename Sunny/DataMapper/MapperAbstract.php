@@ -106,6 +106,20 @@ abstract class Sunny_DataMapper_MapperAbstract
     }
     
     /**
+     * Quote identifier for use in custom queries
+     * 
+     * @see Zend_Db_Adapter_Abstract for more information about arguments
+     * @param mixed $ident
+     * @param boolean $auto
+     * 
+     * @return string
+     */
+    public function quoteInto($text, $value, $type = null, $count = null)
+    {
+    	return $this->getDbTable()->getAdapter()->quoteInto($text, $value, $type, $count);
+    }
+    
+    /**
      * Create new entity
      * 
      * @param  array $data initial content data
@@ -220,6 +234,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	}
 	
 	/**
+	 * TODO: change layer
 	 * Fetches many rows
 	 * @see Zend_Db_Table for more information about arguments
 	 * 
@@ -269,7 +284,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	 */
 	public function fetchPage($where = null, $order = null, $count = null, $page = null)
 	{
-		$offset = 0;
+		$offset = null;
 		if (null !== $count && null !== $page) {
 			$offset = $page * $count - $count;
 		}
