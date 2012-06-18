@@ -175,6 +175,16 @@ class Sunny_DataMapper_EntityAbstract
 		return $this->_identifier;
 	}
 	
+	public function setExtend($name, $data)
+	{
+		// TODO: extension
+	}
+	
+	public function getExtend($name)
+	{
+		// TODO: extension
+	}
+	
 	/**
 	 * Returns array representation of model
 	 * 

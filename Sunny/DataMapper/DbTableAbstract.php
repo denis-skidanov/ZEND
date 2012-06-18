@@ -7,7 +7,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
      * @see Zend_Db_Table_Abstract::_fetch
      *
      * @param  Zend_Db_Table_Select $select  query options.
-     * @return array An array containing the row results in FETCH_ASSOC mode.
+     * @return array An array containing the row results in FETCH_ mode.
      */
     protected function _fetch(Zend_Db_Table_Select $select, $fetchMode = Zend_Db::FETCH_ASSOC)
     {
@@ -18,6 +18,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	
 	/**
 	 * Create Zend_Db_Table_Select object for fetch operations
+	 * Based on offset mode
 	 * 
      * @param string|array|Zend_Db_Table_Select $where   OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
      * @param string|array                      $order   OPTIONAL An SQL ORDER clause.
@@ -55,6 +56,27 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	}
 	
 	/**
+	 * Create Zend_Db_Table_Select object for fetch operations
+	 * Based on page mode
+	 * 
+     * @param string|array|Zend_Db_Table_Select $where   OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
+     * @param string|array                      $order   OPTIONAL An SQL ORDER clause.
+     * @param int                               $count   OPTIONAL An SQL LIMIT count.
+     * @param int                               $page    OPTIONAL Page for SQL OFFSET AND LIMIT
+     * @param array|string|Zend_Db_Expr         $columns OPTIONAL The columns to select from this table.
+	 * @return Zend_Db_Table_Select
+	 */
+	public function createSelectPage($where = null, $order = null, $count = null, $page = null, $columns = null)
+	{
+		$offset = null;
+		if (null !== $count && null !== $page) {
+			$offset = $page * $count - $count;
+		}
+		
+		return $this->createSelect($where, $order, $count, $offset, $columns);
+	}
+	
+	/**
 	* Override default _setupTableName method
 	*
 	* (non-PHPdoc)
@@ -84,8 +106,62 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		return strtolower($filter->filter($name));
 	}
 	
-	//public function _fetchCol(){}
-	//public function _fetchOne(){}
+	/**
+	 * Override fetch all method - add columns parameter
+	 * 
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::fetchAll()
+	 * 
+	 * @return array Result rowset
+	 */
+	public function fetchAll($where = null, $order = null, $count = null, $offset = null, $columns = null)
+	{
+		$select = $this->createSelect($where, $order, $count, $offset, $columns);
+		$rows =  $this->_fetch($select);
+		
+		return $rows;
+	}
+	
+	/**
+	* Fetches rowset by page number instead of offset
+	* @see Sunny_DataMapper_MapperAbstract::fetchAll()
+	* @see Zend_Db_Table_Abstract::fetchAll()
+	*
+	* @param mixed $where
+	* @param mixed $order
+	* @param integer $count
+	* @param integer $page
+	* @return Sunny_DataMapper_CollectionAbstract
+	*/
+	public function fetchPage($where = null, $order = null, $count = null, $page = null, $columns = null)
+	{
+		$offset = null;
+		if (null !== $count && null !== $page) {
+			$offset = $page * $count - $count;
+		}
+	
+		return $this->fetchAll($where, $order, $count, $offset, $columns);
+	}
+	
+	/**
+	 * Override fetch row method - add columns parameter
+	 * 
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::fetchRow()
+	 * 
+	 * @return null|array Result row or null if not found
+	 */
+	public function fetchRow($where = null, $order = null, $columns = null)
+	{
+		$select = $this->createSelect($where, $order, 1, null, $columns);
+		$rows = $this->_fetch($select);
+		
+		if (count($rows) == 0) {
+			return null;
+		}
+		
+		return $rows[0];
+	}
 	
 	/**
 	 * Retrieve count of rows in table
@@ -96,7 +172,8 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	public function fetchCount($where = null)
 	{
         // Prepare statement
-		$columns = new Zend_Db_Expr('COUNT(' . $this->quoteIdentifier($this->_primary) . ')');
+        $pk      = current($this->info(self::PRIMARY));
+		$columns = new Zend_Db_Expr('COUNT(' . $this->quoteIdentifier($pk) . ')');
 		$select  = $this->createSelect($where, null, null, null, $columns);
 		
 		// Fetch one
@@ -106,6 +183,51 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		}
 		
 		return $rows[0];
+	}
+	
+	/**
+	 * Find row by primary key value
+	 * 
+	 * @param  string|number             $id
+     * @param  array|string|Zend_Db_Expr $columns OPTIONAL The columns to select from this table.
+	 * @return null|array Result row or null if not found
+	 */
+	public function findByPrimaryKey($id, $columns = null)
+	{
+        $pk     = current($this->info(self::PRIMARY));
+		$where  = $this->quoteInto($this->quoteIdentifier($pk) . ' = ?', $id);
+		$select = $this->createSelect($where, null, 1, null, $columns);
+		
+		return $this->fetchRow($select);
+	}
+	
+	/**
+	* Find rowset by primary keys array values
+	*
+	* @param  array                     $idArray
+	* @param  array|string|Zend_Db_Expr $columns OPTIONAL The columns to select from this table.
+	* @return null|array Result row or null if not found
+	*/
+	public function findByPrimaryKeysArray(array $idArray, $where = null, $columns = null)
+	{
+		if (empty($idArray)) {
+			return array();
+		}
+
+		$select = $this->createSelect($where, null, null, null, $columns);
+		
+		$idArray = array_values($idArray);
+		$idArray = array_unique($idArray);
+        
+		$pk        = current($this->info(self::PRIMARY));
+		$condition = $this->quoteIdentifier($pk) . ' = ?';
+		$where     = array();
+		foreach ($idArray as $id) {
+			$where[] = $this->quoteInto($condition . ' = ?', $id);
+		}
+		
+		$select->where(implode(' ' . Zend_Db_Table_Select::SQL_OR . ' ', $where));
+		return $this->fetchAll($select);
 	}
 	
 	/**
@@ -134,5 +256,11 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	public function quoteIdentifier($ident, $auto = false)
 	{
 		return $this->getAdapter()->quoteIdentifier($ident, $auto);
+	}
+	
+	public function delete($id)
+	{
+		$where = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))), $id);
+		return parent::delete($where);
 	}
 }

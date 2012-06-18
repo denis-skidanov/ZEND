@@ -1,6 +1,6 @@
 <?php
 
-abstract class Sunny_DataMapper_MapperAbstract
+class Sunny_DataMapper_MapperAbstract
 {
 	/**
 	 * Internal db table object container
@@ -57,6 +57,40 @@ abstract class Sunny_DataMapper_MapperAbstract
     }
     
     /**
+     * Convert rowset to collection object
+     * 
+     * @param array $rowset Result array of rows from db
+     * @return Sunny_DataMapper_CollectionAbstract
+     */
+    protected function _rowsetToCollection(array $rowset = array())
+    {
+    	// Store every row to a new created model and store it to result array
+    	$collection = array();
+    	foreach ($rowset as $row) {
+    		$collection[] = $this->createEntity($row);
+    	}
+    	
+    	// Return rows
+    	return $this->createCollection($collection);    	 
+    }
+    
+    /**
+     * Convert single row to entity object
+     * 
+     * @param  array $row Db result row
+     * @return Sunny_DataMapper_EntityAbstract
+     */
+    protected function _rowToEntity($row = null)
+    {
+    	if (null == $row) {
+    		return null;
+    	}
+    	
+    	// Store row data to model and return it
+    	return $this->createEntity($row);
+    }
+    
+    /**
      * Set db table object
      * 
      * @param string|Zend_Db_Table_Abstract $dbTable
@@ -102,7 +136,7 @@ abstract class Sunny_DataMapper_MapperAbstract
      */
     public function quoteIdentifier($ident, $auto = false)
     {
-    	return $this->getDbTable()->getAdapter()->quoteIdentifier($ident, $auto);
+    	return $this->getDbTable()->quoteIdentifier($ident, $auto);
     }
     
     /**
@@ -116,7 +150,7 @@ abstract class Sunny_DataMapper_MapperAbstract
      */
     public function quoteInto($text, $value, $type = null, $count = null)
     {
-    	return $this->getDbTable()->getAdapter()->quoteInto($text, $value, $type, $count);
+    	return $this->getDbTable()->quoteInto($text, $value, $type, $count);
     }
     
     /**
@@ -125,8 +159,15 @@ abstract class Sunny_DataMapper_MapperAbstract
      * @param  array $data initial content data
      * @return Application_Model_Abstract object
      */
-    public function createEntity(array $data)
+    public function createEntity(array $data = array())
     {
+    	$columns = $this->getDbTable()->info(Zend_Db_Table_Abstract::COLS);
+    	$columns = array_fill_keys(array_values($columns), null);
+    	
+    	// Filter data
+    	$data = array_intersect_key($data, $columns);
+    	$data = array_merge($columns, $data);
+    	
     	$options = array(
     		'data'       => $data,
     		'identifier' => $data[current($this->getDbTable()->info(Zend_Db_Table_Abstract::PRIMARY))]
@@ -180,34 +221,12 @@ abstract class Sunny_DataMapper_MapperAbstract
 	* Delete records from db
 	*
 	* @see Zend_Db_Table for mode information about argument
-	* @param  mixed $where
+	* @param  Sunny_DataMapper_EntityAbstract $where
 	* @return number of affected rows
 	*/
-	public function delete($where)
+	public function delete($entity)
 	{
-		return $this->getDbTable()->delete($where);
-	}
-	
-	/**
-	 * Find row by primary key(s)
-	 * 
-	 * @param integer $id
-	 * @param Application_Model_Abstract $model
-	 * @throws Exception
-	 * @return mixed
-	 */
-	public function find($id)
-	{
-		// Fetch from database
-		$result = $this->getDbTable()->find($id);
-		if (0 == count($result)) {
-			// Error - empty result
-			return false;
-		}
-		
-		// Store date to model and return it
-		$row = $result->current();		
-		return $this->create($row->toArray());
+		return $this->getDbTable()->delete($entity->getId());
 	}
 	
 	/**
@@ -224,17 +243,10 @@ abstract class Sunny_DataMapper_MapperAbstract
 	{
 		// Fetch row from database
 		$result = $this->getDbTable()->fetchRow($where, $order);
-		if (null == $result) {
-			// Error - empty result
-			return false;
-		}
-		
-		// Store row data to model and return it
-		return $this->createEntity($result->toArray());
+		return $this->_rowToEntity($result);
 	}
 	
 	/**
-	 * TODO: change layer
 	 * Fetches many rows
 	 * @see Zend_Db_Table for more information about arguments
 	 * 
@@ -248,15 +260,7 @@ abstract class Sunny_DataMapper_MapperAbstract
 	{
 		// Fetches rows from database
 		$rowSet = $this->getDbTable()->fetchAll($where, $order, $count, $offset);
-		
-		// Store every row to a new created model and store it to result array
-		$collection = array();
-		foreach ($rowSet as $row) {
-			$collection[] = $this->createEntity($row->toArray());
-		}
-		
-		// Return rows
-		return $this->createCollection($collection);
+		return $this->_rowsetToCollection($rowSet);
 	}
 	
 	/**
@@ -282,13 +286,35 @@ abstract class Sunny_DataMapper_MapperAbstract
 	 * @param integer $page
 	 * @return Sunny_DataMapper_CollectionAbstract
 	 */
-	public function fetchPage($where = null, $order = null, $count = null, $page = null)
+	public function fetchPage($where = null, $order = null, $count = null, $page = null, $columns = null)
 	{
-		$offset = null;
-		if (null !== $count && null !== $page) {
-			$offset = $page * $count - $count;
-		}
-		
-		return $this->fetchAll($where, $order, $count, $offset);
+		$rowSet = $this->getDbTable()->fetchPage($where, $order, $count, $page, $columns);
+		return $this->_rowsetToCollection($rowSet);
+	}
+	
+	/**
+	 * Find row by primary key
+	 * 
+	 * @param number                    $id      Primary key value
+	 * @param string|array|Zend_Db_Expr $columns Columns for result
+	 * @return Sunny_DataMapper_EntityAbstract
+	 */
+	public function findByPrimaryKey($id, $columns = null)
+	{
+		$row = $this->getDbTable()->findByPrimaryKey($id, $columns);
+		return $this->_rowToEntity($row);
+	}
+	
+	/**
+	 * Find rows by primary key values
+	 * 
+	 * @param array                     $idArray Array of primary key values
+	 * @param string|array|Zend_Db_Expr $where   OPTIONAL Sql where clause
+	 * @param string|array|Zend_Db_Expr $columns OPTIONAL Sql columns clause
+	 */
+	public function findByPrimaryKeysArray(array $idArray, $where = null, $columns = null)
+	{
+		$rowSet = $this->getDbTable()->findByPrimaryKeysArray($id, $where, $columns);
+		return $this->_rowsetToCollection($rowSet);
 	}
 }
