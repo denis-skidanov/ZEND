@@ -188,47 +188,106 @@ class Sunny_DataMapper_MapperAbstract
     	$collectionName = $this->_formatCollectionName(get_class($this));
     	return new $collectionName(array('data' => $data));
     }
-    
-    /**
-     * Update or insert model data to database
-     * Return number of affected rows on success or false otherwise
-     * 
-     * @param Application_Model_Abstract $model
-     * @throws Exception
-     * @return mixed
-     */
-    public function save($model)
+	
+	/**
+	 * Find row by primary key
+	 * 
+	 * @param number                    $id      Primary key value
+	 * @param string|array|Zend_Db_Expr $columns Columns for result
+	 * @return Sunny_DataMapper_EntityAbstract
+	 */
+	public function findEntity($id, $columns = null)
 	{
-		// Prepare data
-		$data = $model->toArray();
-		$id = $model->getId();
+		$row = current($this->getDbTable()->find($id, $columns));
+		return $this->_rowToEntity($row);
+	}
+	
+	/**
+	 * Find rows by primary key values
+	 * 
+	 * @param array                     $idArray Array of primary key values
+	 * @param string|array|Zend_Db_Expr $where   OPTIONAL Sql where clause
+	 * @param string|array|Zend_Db_Expr $columns OPTIONAL Sql columns clause
+	 */
+	public function findCollection(array $idArray, $columns = null)
+	{
+		$rowSet = $this->getDbTable()->find($id, $columns);
+		return $this->_rowsetToCollection($rowSet);
+	}
+	
+	/**
+	 * Save entity to db
+	 * 
+	 * @param Sunny_DataMapper_EntityAbstract $entity
+	 * @return mixed Return primary key value if new row inserted
+	 */
+	public function saveEntity($entity)
+	{
+		$e  = $entity->toArray();
+		$id = $entity->getId();
+		
+		// Cleanup data
+		$data   = array();
+		foreach ($e as $key => $value) {
+			if (null !== $value) {
+				$data[$key] = $value;
+			}
+		}
+		
+		// if nothing to write - return
+		if (empty($data)) {
+			return false;
+		}
+		
+		if (empty($data['date_created'])) {
+			$data['date_created'] = time();
+		}
+		
+		$data['date_modified'] = time();
 		
 		if (empty($id)) {
-			// If id not set - insert new
 			unset($data['id']);
-			// Zend_Db_Table insert return primary key value unlike as adapters insert method
-			// So we check if null
-			$return = $this->getDbTable()->insert($data);
-			return !is_null($return);
+			return $this->getDbTable()->insert($data);
 		} else {
-			// Else update existing
-			$return = $this->getDbTable()->update($data, array('id = ?' => $id));
-			return (bool) $return;
+			$this->getDbTable()->update($data, $id);
 		}
 	}
 	
 	/**
-	* Delete records from db
-	*
-	* @see Zend_Db_Table for mode information about argument
-	* @param  Sunny_DataMapper_EntityAbstract $where
-	* @return number of affected rows
-	*/
-	public function delete($entity)
+	 * Save collection at once
+	 * 
+	 * @param Sunny_DataMapper_CollectionAbstract $collection
+	 */
+	public function saveCollection(Sunny_DataMapper_CollectionAbstract $collection)
 	{
-		return $this->getDbTable()->delete($entity->getId());
+		$success = array();
+		foreach ($collection as $entity) {
+			$success[$entity->getIdentifier()] = $this->saveEntity($entity);
+		}
+		
+		return $success;
 	}
 	
+	/**
+	 * Delete single entity
+	 * 
+	 * @param Sunny_DataMapper_EntityAbstract $entity
+	 */
+	public function deleteEntity(Sunny_DataMapper_EntityAbstract $entity)
+	{
+		$this->getDbTable()->delete($entity->getIdentifier());
+	}
+	
+	/**
+	 * Delete collection of entities
+	 * 
+	 * @param Sunny_DataMapper_CollectionAbstract $collection
+	 */
+	public function deleteCollection(Sunny_DataMapper_CollectionAbstract $collection)
+	{
+		$this->getDbTable()->delete($collection->getIdentifiers());
+	}
+    
 	/**
 	 * Fetches single row
 	 * @see Zend_Db_Table for more information about arguments
@@ -241,7 +300,6 @@ class Sunny_DataMapper_MapperAbstract
 	 */
 	public function fetchRow($where = null, $order = null)
 	{
-		// Fetch row from database
 		$result = $this->getDbTable()->fetchRow($where, $order);
 		return $this->_rowToEntity($result);
 	}
@@ -258,7 +316,6 @@ class Sunny_DataMapper_MapperAbstract
 	 */
 	public function fetchAll($where = null, $order = null, $count = null, $offset = null)
 	{
-		// Fetches rows from database
 		$rowSet = $this->getDbTable()->fetchAll($where, $order, $count, $offset);
 		return $this->_rowsetToCollection($rowSet);
 	}
@@ -289,32 +346,6 @@ class Sunny_DataMapper_MapperAbstract
 	public function fetchPage($where = null, $order = null, $count = null, $page = null, $columns = null)
 	{
 		$rowSet = $this->getDbTable()->fetchPage($where, $order, $count, $page, $columns);
-		return $this->_rowsetToCollection($rowSet);
-	}
-	
-	/**
-	 * Find row by primary key
-	 * 
-	 * @param number                    $id      Primary key value
-	 * @param string|array|Zend_Db_Expr $columns Columns for result
-	 * @return Sunny_DataMapper_EntityAbstract
-	 */
-	public function findByPrimaryKey($id, $columns = null)
-	{
-		$row = $this->getDbTable()->findByPrimaryKey($id, $columns);
-		return $this->_rowToEntity($row);
-	}
-	
-	/**
-	 * Find rows by primary key values
-	 * 
-	 * @param array                     $idArray Array of primary key values
-	 * @param string|array|Zend_Db_Expr $where   OPTIONAL Sql where clause
-	 * @param string|array|Zend_Db_Expr $columns OPTIONAL Sql columns clause
-	 */
-	public function findByPrimaryKeysArray(array $idArray, $where = null, $columns = null)
-	{
-		$rowSet = $this->getDbTable()->findByPrimaryKeysArray($id, $where, $columns);
 		return $this->_rowsetToCollection($rowSet);
 	}
 }

@@ -186,51 +186,6 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	}
 	
 	/**
-	 * Find row by primary key value
-	 * 
-	 * @param  string|number             $id
-     * @param  array|string|Zend_Db_Expr $columns OPTIONAL The columns to select from this table.
-	 * @return null|array Result row or null if not found
-	 */
-	public function findByPrimaryKey($id, $columns = null)
-	{
-        $pk     = current($this->info(self::PRIMARY));
-		$where  = $this->quoteInto($this->quoteIdentifier($pk) . ' = ?', $id);
-		$select = $this->createSelect($where, null, 1, null, $columns);
-		
-		return $this->fetchRow($select);
-	}
-	
-	/**
-	* Find rowset by primary keys array values
-	*
-	* @param  array                     $idArray
-	* @param  array|string|Zend_Db_Expr $columns OPTIONAL The columns to select from this table.
-	* @return null|array Result row or null if not found
-	*/
-	public function findByPrimaryKeysArray(array $idArray, $where = null, $columns = null)
-	{
-		if (empty($idArray)) {
-			return array();
-		}
-
-		$select = $this->createSelect($where, null, null, null, $columns);
-		
-		$idArray = array_values($idArray);
-		$idArray = array_unique($idArray);
-        
-		$pk        = current($this->info(self::PRIMARY));
-		$condition = $this->quoteIdentifier($pk) . ' = ?';
-		$where     = array();
-		foreach ($idArray as $id) {
-			$where[] = $this->quoteInto($condition . ' = ?', $id);
-		}
-		
-		$select->where(implode(' ' . Zend_Db_Table_Select::SQL_OR . ' ', $where));
-		return $this->fetchAll($select);
-	}
-	
-	/**
 	 * Proxy to adapter quote into method
 	 * @see Zend_Db_Adapter_Abstract
 	 * 
@@ -258,9 +213,72 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		return $this->getAdapter()->quoteIdentifier($ident, $auto);
 	}
 	
-	public function delete($id)
+	/**
+	* Find row(s)
+	*
+	* @param  int|array                 $idArray Primary key value(s)
+	* @param  array|string|Zend_Db_Expr $columns OPTIONAL The columns to select from this table.
+	* @return null|array Result row or null if not found
+	*/
+	public function find($idArray, $columns = null)
 	{
-		$where = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))), $id);
-		return parent::delete($where);
+		$idArray = (array) $idArray;
+		$idArray = array_unique($idArray);
+		
+		if (empty($idArray)) {
+			return array();
+		}
+		
+		$where = array();
+		foreach ($idArray as $id) {
+			$where[] = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))) . ' = ?', $id);
+		}
+		
+		$where = implode(' ' . Zend_Db_Select::SQL_OR . ' ', $where);
+		$select = $this->createSelect($where, null, 1, null, $columns);
+	
+		return $this->_fetch($select);
+	}
+	
+	/**
+	 * Update record by primary key
+	 * 
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::update()
+	 * 
+	 * @param  array $data Data for update
+	 * @param  int   $id   Primary key value
+	 * @return int   The number of affected rows
+	 */
+	public function update($data, $id)
+	{
+		$where = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))) . ' = ?', $id);
+		return parent::update($data, $where);
+	}
+	
+	/**
+	 * Allow deleting multiple rows by his primary key values
+	 * 
+	 * (non-PHPdoc)
+	 * @see    Zend_Db_Table_Abstract::delete()
+	 * 
+	 * @param  int|array $idArray Primary key value(s)
+	 * @return int       The number of rows deleted.
+	 */
+	public function delete($idArray)
+	{
+		$idArray = (array) $idArray;
+		$idArray = array_unique($idArray);
+		
+		if (empty($idArray)) {
+			return;
+		}
+		
+		$where = array();
+		foreach ($idArray as $id) {
+			$where[] = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))), $id);
+		}
+		
+		return parent::delete(implode(' ' . Zend_Db_Select::SQL_OR . ' ', $where));
 	}
 }
