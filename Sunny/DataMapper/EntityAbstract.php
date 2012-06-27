@@ -10,6 +10,13 @@ class Sunny_DataMapper_EntityAbstract
 	protected $_data = array();
 	
 	/**
+	 * Extensions container
+	 * 
+	 * @var array
+	 */
+	protected $_extentions = array();
+	
+	/**
 	 * Internal entry identifier
 	 * 
 	 * @var string|integer
@@ -107,7 +114,17 @@ class Sunny_DataMapper_EntityAbstract
 			throw new Exception("Call to undefined method " . __METHOD__, 500);
 		}
 		
-		$prefix = '__' . substr(strtolower($name), 0, 3);		
+		$prefixExtend = substr($name, 0, 9);		
+		switch ($prefixExtend) {
+			case 'setExtend':
+			case 'getExtend':
+				array_unshift($arguments, substr($name, 9));
+				return call_user_func_array(array($this, $prefixExtend), $arguments);
+			//default:
+				//throw new Exception("Invalid property or method name '$name'", 500);
+		}
+		
+		$prefix = '__' . substr(strtolower($name), 0, 3);
 		switch ($prefix) {
 			case '__set':
 			case '__get':
@@ -177,12 +194,20 @@ class Sunny_DataMapper_EntityAbstract
 	
 	public function setExtend($name, $data)
 	{
-		// TODO: extension
+		if (!$data instanceof Sunny_DataMapper_CollectionAbstract && !$data instanceof Sunny_DataMapper_EntityAbstract) {
+			if (!$this->_ignoreUndefinedNames) {
+				throw new Exception('Invalid extention data provided', 500);
+			}	
+		}
+		
+		$this->_extentions[$name] = $data;
+		return $this;
+		
 	}
 	
 	public function getExtend($name)
 	{
-		// TODO: extension
+		return $this->_extentions[$name];
 	}
 	
 	/**
