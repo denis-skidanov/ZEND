@@ -197,7 +197,9 @@ class Sunny_DataMapper_EntityAbstract
 		if (!$data instanceof Sunny_DataMapper_CollectionAbstract && !$data instanceof Sunny_DataMapper_EntityAbstract) {
 			if (!$this->_ignoreUndefinedNames) {
 				throw new Exception('Invalid extention data provided', 500);
-			}	
+			}
+
+			return $this;
 		}
 		
 		$this->_extentions[$name] = $data;

@@ -186,6 +186,28 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	}
 	
 	/**
+	 * Fetch tree when table has chain keys
+	 * 
+	 * @param mixed $where
+	 * @param mixed $columns
+	 * @return array
+	 */
+	public function fetchTree($where = null, $columns = null)
+	{
+		$name 		= $this->info(self::NAME);
+		$pk 		= current($this->info(self::PRIMARY));
+		$cols 		= $this->info(self::COLS);
+		$tree_col 	= $name . '_' . $pk;
+		
+		if (!in_array($tree_col, $cols)) {
+			return array();
+		}
+		
+		$select = $this->createSelect($where, null, null, null, $columns);
+		return  $this->_fetch($select);
+	}
+	
+	/**
 	 * Proxy to adapter quote into method
 	 * @see Zend_Db_Adapter_Abstract
 	 * 
