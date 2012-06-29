@@ -3,6 +3,16 @@
 class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 {
 	/**
+	 * Custom query to database
+	 * 
+	 * @param string $sql 
+	 */
+	public function query($sql)
+	{
+		$this->getAdapter()->query($sql);
+	}
+	
+	/**
      * Support method for fetching rows (adding fetch mode).
      * @see Zend_Db_Table_Abstract::_fetch
      *
