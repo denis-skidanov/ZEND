@@ -194,10 +194,13 @@ class Sunny_DataMapper_EntityAbstract
 	
 	public function setExtend($name, $data)
 	{
-		if (!$data instanceof Sunny_DataMapper_CollectionAbstract && !$data instanceof Sunny_DataMapper_EntityAbstract) {
+		if (!$data instanceof Sunny_DataMapper_CollectionAbstract && 
+		    !$data instanceof Sunny_DataMapper_EntityAbstract) {
 			if (!$this->_ignoreUndefinedNames) {
 				throw new Exception('Invalid extention data provided', 500);
-			}	
+			}
+
+			return $this;
 		}
 		
 		$this->_extentions[$name] = $data;
@@ -217,6 +220,12 @@ class Sunny_DataMapper_EntityAbstract
 	 */
 	public function toArray()
 	{
-		return $this->_data;
+		$return = $this->_data;
+		
+		foreach ($this->_extentions as $name => $extension) {
+			$return['extend' . ucfirst($name)] = $extension->toArray();
+		}
+		
+		return $return;
 	}
 }

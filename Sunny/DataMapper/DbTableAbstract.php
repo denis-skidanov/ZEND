@@ -3,6 +3,16 @@
 class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 {
 	/**
+	 * Custom query to database
+	 * 
+	 * @param string $sql 
+	 */
+	public function query($sql)
+	{
+		$this->getAdapter()->query($sql);
+	}
+	
+	/**
      * Support method for fetching rows (adding fetch mode).
      * @see Zend_Db_Table_Abstract::_fetch
      *
@@ -183,6 +193,28 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		}
 		
 		return $rows[0];
+	}
+	
+	/**
+	 * Fetch tree when table has chain keys
+	 * 
+	 * @param mixed $where
+	 * @param mixed $columns
+	 * @return array
+	 */
+	public function fetchTree($where = null, $columns = null)
+	{
+		$name 		= $this->info(self::NAME);
+		$pk 		= current($this->info(self::PRIMARY));
+		$cols 		= $this->info(self::COLS);
+		$tree_col 	= $name . '_' . $pk;
+		
+		if (!in_array($tree_col, $cols)) {
+			return array();
+		}
+		
+		$select = $this->createSelect($where, null, null, null, $columns);
+		return  $this->_fetch($select);
 	}
 	
 	/**

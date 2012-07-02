@@ -348,4 +348,45 @@ class Sunny_DataMapper_MapperAbstract
 		$rowSet = $this->getDbTable()->fetchPage($where, $order, $count, $page, $columns);
 		return $this->_rowsetToCollection($rowSet);
 	}
+	
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @return NULL
+	 */
+	public function fetchTree()
+	{
+		$rowSet = $this->getDbTable()->fetchTree();
+		$name = $this->getDbTable()->info(Zend_Db_Table_Abstract::NAME);
+		$pk = current($this->getDbTable()->info(Zend_Db_Table_Abstract::PRIMARY));
+		
+		if(empty($rowSet)){
+			return null;
+		} 
+		
+		return $this->_generateTree($rowSet, $pk, $name);
+	}
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $rowSet
+	 * @param unknown_type $pk
+	 * @param unknown_type $name
+	 * @param unknown_type $pkValue
+	 */
+	protected function _generateTree($rowSet, $pk, $name, $pkValue = 0)
+	{
+		$collection = $this->createCollection();
+		
+		foreach ($rowSet as $row) {
+			if ($row[$name . '_' . $pk] == $pkValue) {
+				$entity = $this->_rowToEntity($row);
+				$entity->setExtendChilds($this->_generateTree($rowSet, $pk, $name, $row[$pk]));
+				$collection->addEntry($entity);
+			}
+		}	
+		return $collection;
+	} 
 }
