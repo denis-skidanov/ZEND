@@ -275,7 +275,12 @@ class Sunny_DataMapper_MapperAbstract
 	 */
 	public function deleteEntity(Sunny_DataMapper_EntityAbstract $entity)
 	{
-		$this->getDbTable()->delete($entity->getIdentifier());
+		$id = $entity->getIdentifier();
+		if (!$id) {
+			return false;
+		}
+		
+		return $this->getDbTable()->delete($entity->getIdentifier());
 	}
 	
 	/**
@@ -355,9 +360,9 @@ class Sunny_DataMapper_MapperAbstract
 	 * Enter description here ...
 	 * @return NULL
 	 */
-	public function fetchTree()
+	public function fetchTree($where = null, $columns = null)
 	{
-		$rowSet = $this->getDbTable()->fetchTree();
+		$rowSet = $this->getDbTable()->fetchTree($where, $columns);
 		$name = $this->getDbTable()->info(Zend_Db_Table_Abstract::NAME);
 		$pk = current($this->getDbTable()->info(Zend_Db_Table_Abstract::PRIMARY));
 		
