@@ -228,4 +228,38 @@ class Sunny_DataMapper_EntityAbstract
 		
 		return $return;
 	}
+	
+	/**
+	 * Format date by format 'dayNum monthName fullYear yearSuffix'
+	 * Extensions included in processing
+	 * 
+	 * @param string $fieldName
+	 * @param array  $translatedMonths
+	 * @param string $translatedYearSuffix
+	 */
+	public function formatDate($fieldName, $translatedMonths = array(), $translatedYearSuffix = null)
+	{
+		if (array_key_exists($fieldName, $this->_data)) {
+			$formattedDate = date('d', $this->_data[$fieldName]);
+			
+			if (!empty($translatedMonths) && count($translatedMonths) == 12) {
+				$formattedDate .= ' ' . $translatedMonths[(int) date('m', $this->_data[$fieldName])];
+			} else {
+				$formattedDate .= ' ' . date('m', $this->_data[$fieldName]);
+			}
+			
+			$formattedDate .= ' ' . date('Y', $this->_data[$fieldName]);
+			
+			if (null !== $translatedYearSuffix) {
+				$formattedDate .= ' ' . trim($translatedYearSuffix);
+			}
+			
+			$this->_data[$fieldName] = $formattedDate;
+		}
+		
+		
+		foreach ($this->_extentions as $extension) {
+			$extension->formatDate($fieldName, $translatedMonths, $translatedYearSuffix);
+		}
+	}
 }
