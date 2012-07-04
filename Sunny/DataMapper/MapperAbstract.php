@@ -129,7 +129,7 @@ class Sunny_DataMapper_MapperAbstract
    		}
    		
    		$class = get_class($this);
-   		$id    = $class . '::' . $method . '(' . md5($arguments) . ')';
+   		$id    = $class . '_' . $method . '_' . md5(serialize($arguments));
    		$tags  = array($class, $method);
    		
    		if (!($result = self::$_cache->load($id))) {
