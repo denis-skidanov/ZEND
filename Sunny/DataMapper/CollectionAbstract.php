@@ -82,6 +82,21 @@ class Sunny_DataMapper_CollectionAbstract implements Iterator, Countable, ArrayA
 	}
 	
 	/**
+	 * Format date by format 'dayNum monthName fullYear yearSuffix'
+	 * For entrie collection
+	 * 
+	 * @param string $fieldName
+	 * @param array  $translatedMonths
+	 * @param string $translatedYearSuffix
+	 */
+	public function formatDate($fieldName, $translatedMonths = array(), $translatedYearSuffix = null)
+	{
+		foreach ($this->_data as $entity) {
+			$entity->formatDate($fieldName, $translatedMonths, $translatedYearSuffix);
+		}
+	}
+	
+	/**
 	 * Get all entries identifiers in collection
 	 * 
 	 * @return array identifiers
