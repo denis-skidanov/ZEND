@@ -8,6 +8,13 @@ class Sunny_DataMapper_MapperAbstract
 	 * @var Zend_Db_Table_Abstract
 	 */
 	protected $_dbTable;
+	
+	/**
+	 * Internal cache object container
+	 * 
+	 * @var Zend_Cache_Core
+	 */
+	protected static $_cache;
  
     /**
      * Format entity class name from mapper name
@@ -88,6 +95,49 @@ class Sunny_DataMapper_MapperAbstract
     	
     	// Store row data to model and return it
     	return $this->createEntity($row);
+    }
+    
+    /**
+     * Setup internal cache container
+     * 
+     * @param Zend_Cache_Core $cache
+     */
+    public static function setupModelCache(Zend_Cache_Core $cache)
+    {
+    	self::$_cache = $cache;
+    }
+    
+    /**
+     * Magic method: uses when retrieving cached model
+     * 
+     * @param  string $name
+     * @param  array  $arguments
+     * @throws Exception
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+    	$method = strtolower(substr($name, 6, 1)) . substr($name, 7);
+    	if ('cached' != substr(strtolower($name), 0, 6) || !method_exists($this, $method)) {    		
+    		if (!method_exists($this, $method)) {
+    			throw new Exception("Undefined method " . get_class($this) . '::' . $method, 500);
+    		}
+    	}
+    		
+   		if (!self::$_cache instanceof Zend_Cache_Core) {
+   			return call_user_func_array(array($this, $method), $arguments);
+   		}
+   		
+   		$class = get_class($this);
+   		$id    = $class . '::' . $method . '(' . md5($arguments) . ')';
+   		$tags  = array($class, $method);
+   		
+   		if (!($result = self::$_cache->load($id))) {
+   			$result = call_user_func_array(array($this, $method), $arguments);
+   			self::$_cache->save($result, $id, $tags);
+   		}
+   		
+   		return $result;
     }
     
     /**
