@@ -117,27 +117,28 @@ class Sunny_DataMapper_MapperAbstract
      */
     public function __call($name, $arguments)
     {
-    	$method = strtolower(substr($name, 6, 1)) . substr($name, 7);
-    	if ('cached' != substr(strtolower($name), 0, 6) || !method_exists($this, $method)) {    		
-    		if (!method_exists($this, $method)) {
-    			throw new Exception("Undefined method " . get_class($this) . '::' . $method, 500);
+    	//$method = strtolower(substr($name, 6, 1)) . substr($name, 7);
+    	$method = lcfirst(substr($name, 6));
+    	if ('cached' == substr($name, 0, 6) && method_exists($this, $method) && null !== self::$_cache) {
+    		$class = get_class($this);
+    		$id    = $class . '_' . $method . '_' . md5(serialize($arguments));
+    		$tags  = array($class, $method);
+    		 
+    		if (!($result = self::$_cache->load($id))) {
+    			$result = call_user_func_array(array($this, $method), $arguments);
+    			self::$_cache->save($result, $id, $tags);
     		}
-    	}
     		
-   		if (!self::$_cache instanceof Zend_Cache_Core) {
-   			return call_user_func_array(array($this, $method), $arguments);
-   		}
-   		
-   		$class = get_class($this);
-   		$id    = $class . '::' . $method . '(' . md5($arguments) . ')';
-   		$tags  = array($class, $method);
-   		
-   		if (!($result = self::$_cache->load($id))) {
-   			$result = call_user_func_array(array($this, $method), $arguments);
-   			self::$_cache->save($result, $id, $tags);
-   		}
-   		
-   		return $result;
+    		return $result;
+    	}
+    	
+    	if (null === self::$_cache) {
+    		throw new Exception("Cache object not provided", 500);
+    	}
+    	
+    	if (!method_exists($this, $method)) {    		
+    		throw new Exception("Undefined method " . get_class($this) . '::' . $method, 500);
+    	}
     }
     
     /**
