@@ -308,7 +308,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		
 		$where = array();
 		foreach ($idArray as $id) {
-			$where[] = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))), $id);
+			$where[] = $this->quoteInto($this->quoteIdentifier(current($this->info(self::PRIMARY))) . ' = ?', $id);
 		}
 		
 		return parent::delete(implode(' ' . Zend_Db_Select::SQL_OR . ' ', $where));
