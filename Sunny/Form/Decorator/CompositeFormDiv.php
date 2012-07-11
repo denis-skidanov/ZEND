@@ -23,6 +23,7 @@ class Sunny_Form_Decorator_CompositeFormDiv extends Zend_Form_Decorator_Abstract
 		$translator = $form->getTranslator();
 		$view       = $form->getView();
 		$items      = array();
+		$separator  = $this->getSeparator();
 		
 		foreach ($form as $item) {
 			$item->setView($view);
