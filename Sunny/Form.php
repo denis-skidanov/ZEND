@@ -11,8 +11,18 @@ require_once 'Zend/Form.php';
 
 class Sunny_Form extends Zend_Form
 {
-	public function collectionToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection, $exclude = array(), $result = array(), $level = 0)
+	public function __construct($options = null)
 	{
+		$this->setCompositeDecorators();
+		parent::__construct();
+	}
+	
+	public function collectionToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+		
 		foreach ($collection as $entity) {
 			if (!in_array($entity->id, $exclude)) {
 				$titleOffset = str_repeat('--', $level);
@@ -27,7 +37,20 @@ class Sunny_Form extends Zend_Form
 		return $result;
 	}
 	
-	public function loadDefaultDecorators()
+	public function setElementMultiOptions($name, array $options = array())
+	{
+		if (is_string($name)) {
+			$element = $this->getElement($name);
+		}
+		
+		if (!$element instanceof Zend_Form_Element) {
+			return $this;
+		}
+		
+		$element->setMultiOptions($options);
+	}
+	
+	public function setCompositeDecorators()
 	{
 		$this->addElementPrefixPath('Sunny_Form_Decorator', 'Sunny/Form/Decorator/', 'decorator');
 		$this->setElementDecorators(array('CompositeElementDiv'));

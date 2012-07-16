@@ -3,9 +3,30 @@
 class Sunny_Controller_Action extends Zend_Controller_Action
 {
 	/** Session var names constants */
-	const SESSION_PAGE   = 'page';
-	const SESSION_ROWS   = 'rows';
-	const SESSION_FILTER = 'filter';
+	const SESSION_PAGE = 'SESSION_PAGE';
+	const SESSION_ROWS = 'SESSION_ROWS';
+	const SESSION_FILT = 'SESSION_FILT';
+	
+	/**
+	 * Default page number
+	 * 
+	 * @var integer
+	 */
+	protected $_default_page = 1;
+	
+	/**
+	 * Default rows count
+	 * 
+	 * @var integer
+	 */
+	protected $_default_rows = 20;
+	
+	/**
+	 * Default filters array
+	 * 
+	 * @var array
+	 */
+	protected $_default_filt = array();
 	
 	/**
 	 * Internal default mapper container
@@ -52,23 +73,52 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 	 * 
 	 * @return Zend_Session_Namespace
 	 */
-	public function getSession()
+	protected function _getSession()
 	{
 		if (null === $this->_session) {
-			$this->setSession(new Zend_Session_Namespace(get_class($this)));
+			$this->_setSession(new Zend_Session_Namespace(get_class($this)));
 		}
 		
 		return $this->_session;
 	}
 	
 	/**
-	 * Set controller session namespace
+	 * Get controller session namespace
+	 * If undefined crete it
 	 * 
-	 * @param Zend_Session_Namespace $session
+	 * @return Zend_Session_Namespace
 	 */
-	public function setSession(Zend_Session_Namespace $session)
+	protected function _setSession(Zend_Session_Namespace $session)
 	{
 		$this->_session = $session;
+	}
+	
+	/**
+	 * Get controller session namespace param
+	 * If undefined - return $default value
+	 * 
+	 * @param  string $name    Param name
+	 * @param  mixed  $default Default value of param
+	 * @return mixed
+	 */
+	protected function _getSessionParam($name, $default = null)
+	{
+		if (!isset($this->_getSession()->{$name})) {
+			return $default;
+		}
+		
+		return $this->_getSession()->{$name};
+	}
+	
+	/**
+	 * Set controller session namespace param
+	 * 
+	 * @param string $name  Name of parameter
+	 * @param mixed  $value New value
+	 */
+	public function _setSessionParam($name, $value)
+	{
+		$this->_getSession()->{$name} = $value;
 		return $this;
 	}
 	
@@ -92,6 +142,22 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 	}
 	
 	/**
+	 * Goto url on ajax/header redirect by request header value
+	 * 
+	 * (non-PHPdoc)
+	 * @see Sunny_View_Helper::simpleUrl()
+	 */
+	protected function _gotoUrl($action, $controller = null, $module = null, array $params = null, $name = null)
+	{
+		$url = $this->view->simpleUrl($action, $controller, $module, $params, $name);
+		if ($this->getRequest()->isXmlHttpRequest()) {
+			$this->view->redirectTo = $url;
+		} else {
+			$this->_helper->redirector->gotoUrl($url);
+		}
+	}
+	
+	/**
 	 * Abstract initialization
 	 * If need extending use parent::init() in controller init()
 	 * 
@@ -105,11 +171,6 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 			$this->_helper->layout()->disableLayout();
 		}
 		
-		// Populate requested action to view
-		$this->view->action     = $this->getRequest()->getActionName();
-		$this->view->controller = $this->getRequest()->getControllerName();
-		$this->view->module     = $this->getRequest()->getModuleName();
-		
 		// Populate requested action to controller for url build
 		$this->_a = $this->getRequest()->getActionName();
 		$this->_c = $this->getRequest()->getControllerName();
@@ -119,19 +180,5 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 		$this->view->a = $this->_a;
 		$this->view->c = $this->_c;
 		$this->view->m = $this->_m;
-		
-		// Setup session defaults
-		$session = $this->getSession();
-		if (!isset($session->{self::SESSION_PAGE})) {
-			$session->{self::SESSION_PAGE} = 1;
-		}
-		
-		if (!isset($session->{self::SESSION_ROWS})) {
-			$session->{self::SESSION_ROWS} = 20;
-		}
-		
-		if (!isset($session->{self::SESSION_FILTER})) {
-			$session->{self::SESSION_FILTER} = array();
-		}
 	}
 }
