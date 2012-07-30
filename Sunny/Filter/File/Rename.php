@@ -1,6 +1,6 @@
 <?php
 
-class Sunny_FileRenamer implements Zend_Filter_Interface
+class Sunny_Filter_File_Rename extends Zend_Filter_File_Rename
 {
     /**
      * Associative array of characters and their replace values
@@ -124,26 +124,24 @@ class Sunny_FileRenamer implements Zend_Filter_Interface
 		$this->_useCodebase = $useCodebase;
 	}
     
-	public function filter($filename)
+	public function filter($value)
     {
-    	// Check valid argument
-    	if (empty($filename) || !is_string($filename)) {
-    		throw new Zend_Filter_Exception("File name must be an not empty string");
-    	} 
-    	
-    	// Split string to characters
+        $file   = $this->getNewName($value, true);
+        if (is_string($file)) {
+            return $file;
+        }
+
+		// Split string to characters
     	if ($this->_useCodebase !== false && is_string($this->_useCodebase)) {
-    		//$filename = iconv($this->_useCodebase, 'UTF-8', $filename);
+    		$file['source'] = iconv($this->_useCodebase, 'UTF-8', $file['source']);
     	}
-		//$filename = iconv('UTF-8','windows-1251', $filename);
-		$filename = mb_strtolower(iconv('windows-1251', 'UTF-8', utf8_decode($filename)), 'windows-1251');
-    	$parts = str_split($filename);    	
+    	$parts = str_split($file['source']);    	
     	
     	// Replace characters
     	foreach ($parts as &$letter) {
     		if(preg_match('/^[a-z0-9]+$/', $letter)){
     			// Skip if not need to replace
-    			continue;
+    			//continue;
     		}
    			
     		// If character in character map replace, otherwise replace to ''
@@ -155,6 +153,17 @@ class Sunny_FileRenamer implements Zend_Filter_Interface
     	}
     	
     	// Return filtered string
-    	return strtolower(implode('', $parts));
+    	$file['target'] = strtolower(implode('', $parts));
+
+        $result = rename($file['source'], $file['target']);
+
+        if ($result === true) {
+            return $file['target'];
+        }
+
+        require_once 'Zend/Filter/Exception.php';
+        throw new Zend_Filter_Exception(sprintf("File '%s' could not be renamed. An error occured while processing the file.", $value));
     }
+	
+	
 }
