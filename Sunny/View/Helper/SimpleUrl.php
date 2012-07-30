@@ -4,6 +4,8 @@ require_once 'Zend/View/Helper/Url.php';
 
 class Sunny_View_Helper_SimpleUrl extends Zend_View_Helper_Url
 {
+	protected $_lang;
+	
 	/**
 	 * Simple generates an url given the name of a route.
 	 * Extending view url helper
@@ -15,6 +17,12 @@ class Sunny_View_Helper_SimpleUrl extends Zend_View_Helper_Url
 	 * @param string  $name       OPTIONAL Name of a route to assemble
 	 * @return string Generated url (for href or src attribute)
 	 */
+	
+	public function __construct()
+	{
+		$this->_lang = Zend_Registry::get('lang');
+	}
+	
 	public function simpleUrl($action, $controller = null, $module = null, array $params = null, $name = null)
 	{
 		$urlOptions = array('action' => $action);
@@ -33,6 +41,6 @@ class Sunny_View_Helper_SimpleUrl extends Zend_View_Helper_Url
         	$urlOptions = array_merge($urlOptions, $params);
         }
 		
-		return $this->url($urlOptions, $name, true, true);
+		return '/' . $this->_lang . $this->url($urlOptions, $name, true, true);
 	}
 }
