@@ -17,6 +17,16 @@ class Sunny_Form extends Zend_Form
 		parent::__construct();
 	}
 	
+	/**
+	 * Generates list of element "select" like tree in Zend_Form
+	 * Generate tree like named options list for "Multi" form elements
+	 * 
+	 * @param  Sunny_DataMapper_CollectionAbstract $collection  Input collection
+	 * @param  array                               $exclude     Array of excluded identifiers
+	 * @param  array                               $result      Previous result or pre defined options
+	 * @param  array                               $level       Tree deep level
+	 * @return array  Result options
+	 */
 	public function collectionToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
 	{
 		if (null === $collection) {
@@ -28,7 +38,27 @@ class Sunny_Form extends Zend_Form
 				$titleOffset = str_repeat('--', $level);
 	
 				$result[$entity->id] = $titleOffset . ' ' . $entity->title;
-				if ($entity->getExtendChilds()->count() > 0) {
+				if (count($entity->getExtendChilds()) > 0) {
+					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
+				}
+			}
+		}
+	
+		return $result;
+	}
+	
+	public function createAssocMultioptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+		
+		foreach ($collection as $entity) {
+			if (!in_array($entity->id, $exclude)) {
+				$titleOffset = str_repeat('--', $level);
+	
+				$result[$entity->alias] = $titleOffset . ' ' . $entity->title;
+				if (count($entity->getExtendChilds()) > 0) {
 					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
 				}
 			}
