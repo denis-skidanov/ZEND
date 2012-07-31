@@ -423,6 +423,7 @@ class Sunny_DataMapper_MapperAbstract
 		
 		return $this->_generateTree($rowSet, $pk, $name);
 	}
+
 	
 	/**
 	 * 
