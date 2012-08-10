@@ -219,6 +219,10 @@ class Sunny_DataMapper_CollectionAbstract implements Iterator, Countable, ArrayA
      */
     public function valid()
     {
-        return !$this->_beyondLastEntry;
+        if (false !== $this->_beyondLastEntry || count($this->_data) == 0) {
+        	return false;
+        }
+        
+    	return true;
     }
 }

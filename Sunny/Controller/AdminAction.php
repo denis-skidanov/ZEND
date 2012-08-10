@@ -192,6 +192,46 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 	}
 	
 	/**
+	 * 
+	 * Creates a data structure for the responder
+	 * @param string $action
+	 * @param string $controller
+	 * @param string $module
+	 * @param array $params
+	 * @param string $method
+	 * @param string $container
+	 * @param string $source
+	 */
+	protected function _makeResponderStructure($action = null, $controller = null, $module = null, $params = array(), $method = 'redirect', $container = null, $source = null)
+	{
+		if (is_null($module)) {
+			$module = $this->_m;
+		}
+		
+		if (is_null($controller)) {
+			$controller = $this->_c;
+		}
+		
+		if (is_null($action)) {
+			$action = $this->_a;
+		}
+		
+		$this->view->actions = (array) $this->view->actions;
+		$this->view->actions[] = array(
+			$method => array(
+				'container' => $container,
+				'url' => array(
+					"m" => $module,
+					"c" => $controller,
+					"a" => $action,
+					'params' => $params
+				),
+				'source' => $source
+			)
+		);
+	}
+	
+	/**
 	 * Abstract initialization
 	 * If need extending use parent::init() in controller init()
 	 * 

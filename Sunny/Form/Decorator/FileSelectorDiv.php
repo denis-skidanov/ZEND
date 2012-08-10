@@ -34,25 +34,23 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 		$buttonLabel = 'Select ' . $mode;
 		if (is_string($attribs['buttonLabel'])) {
 			$buttonLabel = $attribs['buttonLabel'];
+			unset ($attribs['buttonLabel']);
+		}
+		
+		$imgType = '';
+		if (is_string($attribs['media-type'])) {
+			$imgType = $attribs['media-type'];
+			unset ($attribs['media-type']);
 		}
 		
 		$xhtml = '<div class="' . $this->_namespace . '-tag">'
-			   . $view->formHidden($e->getName(), $e->getValue())
+			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType))
 			   . $view->$helper($e->getName() . '-button', $buttonLabel, $attribs, $e->options)
 			   . '<div class="' . $e->getName() . '-list-container ' . $this->_namespace . '-mode-' . $mode . '">'
 			   . '<ul class="' . $e->getName() . '-list"></ul>'
 			   . '</div>'
 			   . '</div>';			
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	
 		return $xhtml;
 	}
 	

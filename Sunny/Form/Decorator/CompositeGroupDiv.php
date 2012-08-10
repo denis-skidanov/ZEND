@@ -39,7 +39,7 @@ class Sunny_Form_Decorator_CompositeGroupDiv extends Zend_Form_Decorator_Abstrac
 		$class  = $this->_namespace;
 		$class .= !empty($name) ? ' ' . $this->_namespace . '-' . $name : '';
 				
-		$xhtml = '<div class="' . $class . '">'
+		$xhtml = '<div class="' . $class . '" id="' . $this->_namespace . '-' . $name . '">'
 		       . $view->fieldset($name, $eContent, array('legend' => $form->getLegend()))
 		       . '</div>';
 		

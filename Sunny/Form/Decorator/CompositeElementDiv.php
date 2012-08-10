@@ -56,7 +56,7 @@ class Sunny_Form_Decorator_CompositeElementDiv extends Zend_Form_Decorator_Abstr
 		if ('Zend_Form_Element_Hidden' == $type) {
 			$xhtml = $view->$helper($e->getName(), $e->getValue(), $e->getAttribs(), $e->options);
 		} else {
-			$xhtml = '<div class="' . $this->_namespace . '-tag">'
+			$xhtml = '<div class="' . $this->_namespace . '-tag ' . $helper . '">'
 			       . $view->$helper($e->getName(), $e->getValue(), $e->getAttribs(), $e->options)
 			       . '</div>';			
 		}
