@@ -267,7 +267,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		}
 		
 		$where = implode(' ' . Zend_Db_Select::SQL_OR . ' ', $where);
-		$select = $this->createSelect($where, null, 1, null, $columns);
+		$select = $this->createSelect($where, null, count($idArray), null, $columns);
 	
 		return $this->_fetch($select);
 	}

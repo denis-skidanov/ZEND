@@ -262,7 +262,7 @@ class Sunny_DataMapper_MapperAbstract
 	 */
 	public function findCollection(array $idArray, $columns = null)
 	{
-		$rowSet = $this->getDbTable()->find($id, $columns);
+		$rowSet = $this->getDbTable()->find($idArray, $columns);
 		return $this->_rowsetToCollection($rowSet);
 	}
 	
@@ -290,17 +290,20 @@ class Sunny_DataMapper_MapperAbstract
 			return false;
 		}
 		
-		if (empty($data['date_created'])) {
+		if (isset($data['date_created']) && empty($data['date_created'])) {
 			$data['date_created'] = time();
 		}
 		
-		$data['date_modified'] = time();
+		if (isset($data['date_modified'])) {
+			$data['date_modified'] = time();
+		}
 		
 		if (empty($id)) {
 			unset($data['id']);
 			return $this->getDbTable()->insert($data);
 		} else {
 			$this->getDbTable()->update($data, $id);
+			return $id;
 		}
 	}
 	

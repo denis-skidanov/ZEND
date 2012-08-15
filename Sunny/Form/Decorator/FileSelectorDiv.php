@@ -37,6 +37,13 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 			unset ($attribs['buttonLabel']);
 		}
 		
+		$selectMultiple = 'false';
+		$jsMethod = 'mainImageRenderer';
+		if (isset($attribs['selectMultiple']) && !!$attribs['selectMultiple']) {
+			$selectMultiple = 'true';
+			$jsMethod = 'imagesRenderer';
+		}
+		
 		$imgType = '';
 		if (is_string($attribs['media-type'])) {
 			$imgType = $attribs['media-type'];
@@ -44,11 +51,12 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 		}
 		
 		$xhtml = '<div class="' . $this->_namespace . '-tag">'
-			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType))
+			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
 			   . $view->$helper($e->getName() . '-button', $buttonLabel, $attribs, $e->options)
 			   . '<div class="' . $e->getName() . '-list-container ' . $this->_namespace . '-mode-' . $mode . '">'
 			   . '<ul class="' . $e->getName() . '-list"></ul>'
 			   . '</div>'
+			   . '<script>$(document).ready(function(){ $.fn.cmsManager(\'' . $jsMethod . '\', null, \'' . $e->getName() . '\'); })</script>'
 			   . '</div>';			
 	
 		return $xhtml;
