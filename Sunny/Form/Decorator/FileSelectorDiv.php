@@ -4,10 +4,12 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 {
 	const MODE_FILE  = 'file';
 	const MODE_IMAGE = 'image';
+	const MODE_VIDEO = 'video';
 	
 	protected $_modes = array(
 		self::MODE_FILE,
-		self::MODE_IMAGE
+		self::MODE_IMAGE,
+		self::MODE_VIDEO
 	);
 	
 	/**
@@ -25,24 +27,27 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 		
 		$attribs = $e->getAttribs();
 		
-		$mode = self::MODE_FILE;
-		if (is_string($attribs['selector_mode']) && in_array($attribs['selector_mode'], $this->_modes)) {
-			$mode = $attribs['selector_mode'];
+		$selectorMode = self::MODE_FILE;
+		if (is_string($attribs['selectorMode']) && in_array($attribs['selectorMode'], $this->_modes)) {
+			$selectorMode = $attribs['selectorMode'];
+			
 		}
-		$attribs['selector_mode'] = $mode;
+		unset($attribs['selectorMode']);
 		
-		$buttonLabel = 'Select ' . $mode;
+		$buttonLabel = 'Select ' . $selectorMode;
 		if (is_string($attribs['buttonLabel'])) {
 			$buttonLabel = $attribs['buttonLabel'];
-			unset ($attribs['buttonLabel']);
+			
 		}
+		unset ($attribs['buttonLabel']);
 		
 		$selectMultiple = 'false';
-		$jsMethod = 'mainImageRenderer';
+		$jsMultiple = 'Single';
 		if (isset($attribs['selectMultiple']) && !!$attribs['selectMultiple']) {
 			$selectMultiple = 'true';
-			$jsMethod = 'imagesRenderer';
+			$jsMultiple = 'Many';
 		}
+		unset($attribs['selectMultiple']);
 		
 		$imgType = '';
 		if (is_string($attribs['media-type'])) {
@@ -50,10 +55,12 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 			unset ($attribs['media-type']);
 		}
 		
+		$jsMethod = 'render' . ucfirst($attribs['selector_mode']) . $jsMultiple;
+		
 		$xhtml = '<div class="' . $this->_namespace . '-tag">'
-			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
+			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'selector-mode' => $selectorMode, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
 			   . $view->$helper($e->getName() . '-button', $buttonLabel, $attribs, $e->options)
-			   . '<div class="' . $e->getName() . '-list-container ' . $this->_namespace . '-mode-' . $mode . '">'
+			   . '<div class="' . $e->getName() . '-list-container ' . $this->_namespace . '-mode-' . $selectorMode . '">'
 			   . '<ul class="' . $e->getName() . '-list"></ul>'
 			   . '</div>'
 			   . '<script>$(document).ready(function(){ $.fn.cmsManager(\'' . $jsMethod . '\', null, \'' . $e->getName() . '\'); })</script>'
