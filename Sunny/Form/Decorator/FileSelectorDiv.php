@@ -55,7 +55,7 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 			unset ($attribs['media-type']);
 		}
 		
-		$jsMethod = 'render' . ucfirst($attribs['selector_mode']) . $jsMultiple;
+		$jsMethod = 'render' . ucfirst($selectorMode) . $jsMultiple;
 		
 		$xhtml = '<div class="' . $this->_namespace . '-tag">'
 			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'selector-mode' => $selectorMode, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
