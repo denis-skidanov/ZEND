@@ -14,7 +14,7 @@ class Sunny_SwfSession extends Zend_Controller_Plugin_Abstract
     	
     	if (Zend_Session::sessionExists()) {
     		// if session exists - cannot rewrite id
-    		return;
+    		//return;
     	}
     	
     	// Rewrite session id to be sure that we use valid session
