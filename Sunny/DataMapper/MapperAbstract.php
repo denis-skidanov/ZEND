@@ -278,27 +278,28 @@ class Sunny_DataMapper_MapperAbstract
 		$id = $entity->getId();
 		
 		// Cleanup data
-		$data = $e;
-		/*foreach ($e as $key => $value) {
-			if (null !== $value) {
-				$data[$key] = $value;
-			}
-		}*/
 		
 		// if nothing to write - return
-		if (empty($data)) {
+		if (empty($e)) {
 			return false;
 		}
 		
-		if (isset($data['date_created'])) {
-			$data['date_created'] = (int) $data['date_created'];
-			if (empty($data['date_created'])) {
-				$data['date_created'] = time();
+		if (isset($e['date_created'])) {
+			$e['date_created'] = (int) $e['date_created'];
+			if (empty($e['date_created'])) {
+				$e['date_created'] = time();
 			}
 		}
 		
-		if (array_key_exists('date_modified', $data)) {
-			$data['date_modified'] = time();
+		if (array_key_exists('date_modified', $e)) {
+			$e['date_modified'] = time();
+		}
+		
+		$data = array();
+		foreach ($e as $key => $value) {
+			if (null !== $value) {
+				$data[$key] = $value;
+			}
 		}
 		
 		if (empty($id)) {
