@@ -1,5 +1,7 @@
 ﻿<?php
 
+// TODO А ты его проверял? Ничего что метод должен называться как последняя часть класса
+
 /**
  * Returns date in current language
  * @author Maximka
