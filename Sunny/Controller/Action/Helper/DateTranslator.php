@@ -11,6 +11,6 @@ class Sunny_Controller_Action_Helper_DateTranslator extends Zend_Controller_Acti
 	{
 		require_once 'Zend/Controller/Action/HelperBroker.php';
 		$view = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer')->view;
-		return $view->translate($data);
+		return $view->dateTranslator($data);
 	}
 }

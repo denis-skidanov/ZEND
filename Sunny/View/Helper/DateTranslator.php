@@ -72,7 +72,7 @@ class Sunny_View_Helper_DateTranslator extends Zend_View_Helper_Abstract
 		)
 	);		
 		
-	public function translate(array $data)
+	public function dateTranslator(array $data)
 	{
 		return date('d', $data['timestamp'])
 				. ' ' . $this->_month[date('m', $data['timestamp'])][$data['lang']]
