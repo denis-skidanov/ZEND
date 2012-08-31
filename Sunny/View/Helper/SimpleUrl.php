@@ -41,6 +41,12 @@ class Sunny_View_Helper_SimpleUrl extends Zend_View_Helper_Url
         	$urlOptions = array_merge($urlOptions, $params);
         }
 		
-		return '/' . $this->_lang . $this->url($urlOptions, $name, true, true);
+		if (!isset($params['lang']) || strlen($params['lang']) != 2) {
+			$urlOptions['lang'] = $this->_lang;
+		} else {
+			$urlOptions['lang'] = $params['lang'];
+		}
+		
+		return "/" . trim($this->url($urlOptions, $name, true, true), "/");
 	}
 }
