@@ -74,27 +74,33 @@ class Sunny_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 			
 			$block = false;
 			
+			$moduleMatch = true;
 			if (!empty($rule['module'])) {
+				$moduleMatch = false;
 				if ('/' == substr($rule['module'], 0, 1) && preg_match($rule['module'], $request->getModuleName())) {
-					$block = true;
+					$moduleMatch = true;
 				} else if ($rule['module'] == $request->getModuleName()) {
-					$block = true;
+					$moduleMatch = true;
 				}
 			}
 			
+			$controllerMatch = true;
 			if (!empty($rule['controller'])) {
+				$controllerMatch = false;
 				if ('/' == substr($rule['controller'], 0, 1) && preg_match($rule['controller'], $request->getControllerName())) {
-					$block = true;
+					$controllerMatch = true;
 				} else if ($rule['controller'] == $request->getControllerName()) {
-					$block = true;
+					$controllerMatch = true;
 				}
 			}
 			
+			$actionMatch = true;
 			if (!empty($rule['action'])) {
+				$actionMatch = false;
 				if ('/' == substr($rule['action'], 0, 1) && preg_match($rule['action'], $request->getActionName())) {
-					$block = true;
+					$actionMatch = true;
 				} else if ($rule['action'] == $request->getActionName()) {
-					$block = true;
+					$actionMatch = true;
 				}
 			}
 			
@@ -110,7 +116,7 @@ class Sunny_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 				$redirectAction = $rule['redirectAction'];
 			}
 			
-			if ($block && !$identity) {
+			if ($moduleMatch && $controllerMatch && $actionMatch && !$identity) {
 				$request->setModuleName($redirectModule);
         		$request->setControllerName($redirectController);
         		$request->setActionName($redirectAction);
