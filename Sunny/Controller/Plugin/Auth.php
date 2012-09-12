@@ -39,6 +39,11 @@ class Sunny_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 					'module'     => $rule['module'],
 					'controller' => $rule['controller'],
 					'action'     => $rule['action'],
+					
+					'redirectModule'     => $rule['redirectModule'],
+					'redirectController' => $rule['redirectController'],
+					'redirectAction'     => $rule['redirectAction'],
+					
 					'disabled'   => (bool) $rule['disabled']
 				);
 			}
@@ -62,6 +67,10 @@ class Sunny_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 			if ($rule['disabled']) {
 				continue;
 			}
+			
+			$redirectModule = $this->_redirect['module'];
+			$redirectController = $this->_redirect['controller'];
+			$redirectAction = $this->_redirect['action'];
 			
 			$block = false;
 			
@@ -89,10 +98,22 @@ class Sunny_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 				}
 			}
 			
+			if (!empty($rule['redirectModule'])) {
+				$redirectModule = $rule['redirectModule'];
+			}
+			
+			if (!empty($rule['redirectController'])) {
+				$redirectController = $rule['redirectController'];
+			}
+			
+			if (!empty($rule['redirectAction'])) {
+				$redirectAction = $rule['redirectAction'];
+			}
+			
 			if ($block && !$identity) {
-				$request->setModuleName($this->_redirect['module']);
-        		$request->setControllerName($this->_redirect['controller']);
-        		$request->setActionName($this->_redirect['action']);
+				$request->setModuleName($redirectModule);
+        		$request->setControllerName($redirectController);
+        		$request->setActionName($redirectAction);
         		$request->setDispatched(true);
 				return;
 			}
