@@ -33,12 +33,33 @@ class Sunny_DataMapper_EntityAbstract
 	/**
 	 * Convert camel case outer names to internal
 	 * 
-	 * @param unknown_type $value
+	 * @param string $value
 	 */
 	protected function _camelCaseToUnderscoreLowerCase($value)
 	{
 		require_once 'Zend/Filter.php';
 		return strtolower(Zend_Filter::filterStatic($value, 'Word_CamelCaseToUnderscore'));
+	}
+	
+	
+	/**
+	 * Setting an setIgnoreUndefinedNames value
+	 * @param bool $value
+	 */
+	public function setIgnoreUndefinedNames($value)
+	{
+		$this->_ignoreUndefinedNames = (bool) $value;
+		return $this;
+	}
+	
+	
+	/**
+	* Returns an setIgnoreUndefinedNames value
+	* @param bool $value
+	*/
+	public function getIgnoreUndefinedNames()
+	{
+		return $this->_ignoreUndefinedNames;
 	}
 	
 	/**
@@ -64,13 +85,9 @@ class Sunny_DataMapper_EntityAbstract
 	{
 		$name = $this->_camelCaseToUnderscoreLowerCase($name);
 		
-		if (!array_key_exists($name, $this->_data)) {
-			if (!$this->_ignoreUndefinedNames) {
-				// If field name not found - error
-				throw new Exception("Invalid set property name '$name'", 500);
-			}
-			
-			return;
+		if (!array_key_exists($name, $this->_data) && !$this->_ignoreUndefinedNames) {
+			// If field name not found - error
+			throw new Exception("Invalid set property name '$name'", 500);			
 		}
 		
 		$this->_data[$name] = $value;
