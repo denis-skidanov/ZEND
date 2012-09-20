@@ -202,7 +202,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	 * @param mixed $columns
 	 * @return array
 	 */
-	public function fetchTree($where = null, $columns = null)
+	public function fetchTree($where = null, $columns = null, $ordering = null)
 	{
 		$name 		= $this->info(self::NAME);
 		$pk 		= current($this->info(self::PRIMARY));
@@ -213,7 +213,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 			return array();
 		}
 		
-		$select = $this->createSelect($where, null, null, null, $columns);
+		$select = $this->createSelect($where, $ordering, null, null, $columns);
 		return  $this->_fetch($select);
 	}
 	
