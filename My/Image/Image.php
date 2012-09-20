@@ -96,28 +96,34 @@ class My_Image_Image
    
 	private function getWidth() 
 	{
- 		$this->_imagesx = imagesx($this->_image);
+		list($width) = getimagesize($this->_image);
+		$this->_imagesx = $width;
 		return $this;
 	}
    
 	private function getHeight() 
 	{
-		$this->_imagesy = imagesy($this->_image);
+		list($height) = getimagesize($this->_image);
+		$this->_imagesy = $height;
 		return $this;
 	}
    
 	public function resizeToHeight ($height) 
 	{
-		$ratio = $height / $this->_imagesy;
-		$width = $this->_imagesx * $ratio;
-		return $this->resize($width, $height);
+		if ($this->_imagesy > 0) {
+			$ratio = $height / $this->_imagesy;
+			$width = $this->_imagesx * $ratio;
+			return $this->resize($width, $height);
+		}
 	}
  
 	public function resizeToWidth ($width) 
 	{
-		$ratio = $width / $this->_imagesx;
-		$height = $this->_imagesy * $ratio;
-		return $this->resize($width, $height);
+		if ($this->_imagesx > 0) {
+			$ratio = $width / $this->_imagesx;
+			$height = $this->_imagesy * $ratio;
+			return $this->resize($width, $height);
+		}
 		
 	}
  
