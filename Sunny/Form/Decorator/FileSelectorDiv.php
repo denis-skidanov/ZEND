@@ -55,10 +55,16 @@ class Sunny_Form_Decorator_FileSelectorDiv extends Sunny_Form_Decorator_Composit
 			unset ($attribs['media-type']);
 		}
 		
+		$path = '';
+		if (is_string($attribs['media-path'])) {
+			$path = $attribs['media-path'];
+			unset ($attribs['media-path']);
+		}
+		
 		$jsMethod = 'render' . ucfirst($selectorMode) . $jsMultiple;
 		
 		$xhtml = '<div class="' . $this->_namespace . '-tag">'
-			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'selector-mode' => $selectorMode, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
+			   . $view->formHidden($e->getName(), $e->getValue(), array('media-type' => $imgType, 'media-path' => $path, 'selector-mode' => $selectorMode, 'select-multiple' => $selectMultiple, 'autocomplete' => "off"))
 			   . $view->$helper($e->getName() . '-button', $buttonLabel, $attribs, $e->options)
 			   . '<div class="' . $e->getName() . '-list-container ' . $this->_namespace . '-mode-' . $selectorMode . '">'
 			   . '<ul class="' . $e->getName() . '-list"></ul>'

@@ -313,4 +313,9 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 		
 		return parent::delete(implode(' ' . Zend_Db_Select::SQL_OR . ' ', $where));
 	}
+	
+	public function deleteWhere($where)
+	{
+		return parent::delete($where);
+	}
 }
