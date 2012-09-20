@@ -225,6 +225,18 @@ class Sunny_DataMapper_EntityAbstract
 		
 	}
 	
+	public function setExtendArray($name, $data)
+	{
+		if (!is_array($data)) {
+			throw new Exception('Invalid extention data provided', 500);
+			return $this;
+		}
+	
+		$this->_extentions[$name] = $data;
+		return $this;
+	
+	}
+	
 	public function getExtend($name)
 	{
 		return $this->_extentions[$name];

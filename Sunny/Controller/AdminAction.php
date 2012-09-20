@@ -53,6 +53,29 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 	 */
 	protected $_filters = array();
 	
+	protected function _htmlifyMessages()
+	{
+		$xhtml = '';
+	
+		if ($this->_helper->flashMessenger->hasMessages()) {
+			foreach ($this->_helper->flashMessenger->getMessages() as $message) {
+				$xhtml .= '<div class="flash-messenger-message ui-corner-all" style="display: none;">' . $message . '</div>';
+			}
+		}
+	
+		$this->_helper->flashMessenger->clearMessages();
+	
+		if ($this->_helper->flashMessenger->hasCurrentMessages()) {
+			foreach ($this->_helper->flashMessenger->getCurrentMessages() as $message) {
+				$xhtml .= '<div class="flash-messenger-message ui-corner-all" style="display: none;">' . $message . '</div>';
+			}
+		}
+	
+		$this->_helper->flashMessenger->clearCurrentMessages();
+	
+		return $xhtml;
+	}
+	
 	/**
 	 * Get session namespace
 	 * 
