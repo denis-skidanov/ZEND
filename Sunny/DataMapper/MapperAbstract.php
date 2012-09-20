@@ -418,9 +418,9 @@ class Sunny_DataMapper_MapperAbstract
 	 * Enter description here ...
 	 * @return NULL
 	 */
-	public function fetchTree($where = null, $columns = null)
+	public function fetchTree($where = null, $columns = null, $ordering = null)
 	{
-		$rowSet = $this->getDbTable()->fetchTree($where, $columns);
+		$rowSet = $this->getDbTable()->fetchTree($where, $columns, $ordering);
 		$name = $this->getDbTable()->info(Zend_Db_Table_Abstract::NAME);
 		$pk = current($this->getDbTable()->info(Zend_Db_Table_Abstract::PRIMARY));
 		
