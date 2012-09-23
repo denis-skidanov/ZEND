@@ -198,6 +198,32 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 		return $this->_mapper;
 	}
 	
+	protected function _changeIgnoredStatus($id)
+	{
+		$entity = $this->_getMapper()->findEntity($id);
+		
+		if($entity->ignored == 1) {
+    		$entity->__set('ignored', 0);
+    	} else {
+    		$entity->__set('ignored', 1);
+    	}
+		
+		$this->_getMapper()->saveEntity($entity);
+	}
+	
+	protected function _changePublishedStatus($id)
+	{
+		$entity = $this->_getMapper()->findEntity($id);
+	
+		if($entity->published == 1) {
+			$entity->__set('published', 0);
+		} else {
+			$entity->__set('published', 1);
+		}
+	
+		$this->_getMapper()->saveEntity($entity);
+	}
+	
 	/**
 	 * Goto url on ajax/header redirect by request header value
 	 * 
