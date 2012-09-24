@@ -143,5 +143,5 @@ class My_Image_Image
 		}
 		return $this->_cachePath;
 
-   }  
+   }
 }
