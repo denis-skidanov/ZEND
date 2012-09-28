@@ -56,7 +56,7 @@ class My_Image_Image
 	{
 		$this->_filename = trim($filename, '/');
 		if (!is_file($this->_filename)) {
-			return;
+			$this->_filename = 'theme/img/front/filler.png';
 		}  	
 		$this->_compression = $compression;
 		$this->_cacheDirName = $this->setCacheDirName($dir);
