@@ -54,7 +54,10 @@ class My_Image_Image
 	
 	public function setImage($filename, $dir = null, $compression = 100)
 	{
-		$this->_filename = trim($filename, '/');  	
+		$this->_filename = trim($filename, '/');
+		if (!is_file($this->_filename)) {
+			return;
+		}  	
 		$this->_compression = $compression;
 		$this->_cacheDirName = $this->setCacheDirName($dir);
 		
