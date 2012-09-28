@@ -47,6 +47,28 @@ class Sunny_Form extends Zend_Form
 		return $result;
 	}
 	
+	public function onecEmploeesCollectionToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+	
+		foreach ($collection as $entity) {
+			if (!in_array($entity->id, $exclude)) {
+				$titleOffset = str_repeat('--', $level);
+	
+				$result[$entity->id] = $titleOffset . ' ' . $entity->sname . ' ' . $entity->name . ' ' . $entity->pname;
+				if (count($entity->getExtendChilds()) > 0) {
+					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
+				}
+			}
+		}
+	
+		return $result;
+	}
+	
+	
+	
 	public function createAssocMultioptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
 	{
 		if (null === $collection) {
