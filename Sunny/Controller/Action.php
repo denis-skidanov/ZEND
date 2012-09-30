@@ -157,6 +157,8 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 		}
 	}
 	
+	
+	
 	/**
 	 * Abstract initialization
 	 * If need extending use parent::init() in controller init()
@@ -181,4 +183,5 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 		$this->view->c = $this->_c;
 		$this->view->m = $this->_m;
 	}
+	
 }
