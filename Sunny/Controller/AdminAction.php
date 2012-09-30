@@ -311,6 +311,61 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 	}
 	
 	/**
+	 * Making timestamp from string h:i:m d-m-Y
+	 * Enter description here ...
+	 * @param unknown_type $string
+	 */
+	public function fulltimeToDb($string = null)
+	{
+		if (is_null($string)) {
+			return time();
+		}
+		
+		$preArray = explode(' ', $string);
+		$timeArray = explode(':', $preArray[0]);
+		$dateArray = explode('-', $preArray[1]);
+		
+		if (count($timeArray) != 2 || count($dateArray) != 3) {
+			return time();
+		}
+		
+		return mktime($timeArray[0], $timeArray[1], 0, $dateArray[1], $dateArray[0], $dateArray[2]);
+	}
+	
+	public function fulltimeFromDb($string = null)
+	{
+		if (is_null($string) || empty($string)) {
+			return date("H:i j-n-Y", time());
+		}
+	
+		return date("H:i j-n-Y", $string);
+	}
+	
+	public function dateToDb($string = null)
+	{
+		if (is_null($string)) {
+			return time();
+		}
+	
+		$dateArray = explode('-', $string);
+	
+		if (count($dateArray) != 3) {
+			return time();
+		}
+	
+		return mktime(0, 0, 1, $dateArray[1], $dateArray[0], $dateArray[2]);
+	}
+	
+	public function dateFromDb($string = null)
+	{
+		if (is_null($string) || empty($string)) {
+			return date("j-n-Y", time());
+		}
+	
+		return date("j-n-Y", $string);
+	}
+	
+	/**
 	 * Abstract initialization
 	 * If need extending use parent::init() in controller init()
 	 * 
