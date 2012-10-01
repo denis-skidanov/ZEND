@@ -335,10 +335,10 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 	public function fulltimeFromDb($string = null)
 	{
 		if (is_null($string) || empty($string)) {
-			return date("H:i j-n-Y", time());
+			return date("h:i j-n-Y", time());
 		}
 	
-		return date("H:i j-n-Y", $string);
+		return date("h:i j-n-Y", $string);
 	}
 	
 	public function dateToDb($string = null)
