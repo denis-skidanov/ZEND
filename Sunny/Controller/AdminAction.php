@@ -310,6 +310,26 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 		return $result;
 	}
 	
+	public function contentsTitlesToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+	
+		foreach ($collection as $entity) {
+			if (!in_array($entity->id, $exclude)) {
+				$titleOffset = str_repeat('--', $level);
+	
+				$result[$entity->id] = $titleOffset . ' ' . $entity->title . ' (' . $entity->languagesAlias . ')';
+				if (count($entity->getExtendChilds()) > 0) {
+					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
+				}
+			}
+		}
+	
+		return $result;
+	}
+	
 	/**
 	 * Making timestamp from string h:i:m d-m-Y
 	 * Enter description here ...
