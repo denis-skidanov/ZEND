@@ -310,6 +310,36 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 		return $result;
 	}
 	
+	/**
+	* Generates list of element "select" like tree in Zend_Form
+	* Generate tree like named options list for "Multi" form elements
+	*
+	* @param  Sunny_DataMapper_CollectionAbstract $collection  Input collection
+	* @param  array                               $exclude     Array of excluded identifiers
+	* @param  array                               $result      Previous result or pre defined options
+	* @param  array                               $level       Tree deep level
+	* @return array  Result options
+	*/
+	public function onecEmployeesToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+	
+		foreach ($collection as $entity) {
+			if (!in_array($entity->id, $exclude)) {
+				$titleOffset = str_repeat('--', $level);
+	
+				$result[$entity->id] = $titleOffset . ' ' . $entity->sname . ' ' . $entity->name;
+				if (count($entity->getExtendChilds()) > 0) {
+					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
+				}
+			}
+		}
+	
+		return $result;
+	}
+	
 	public function contentsTitlesToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
 	{
 		if (null === $collection) {
