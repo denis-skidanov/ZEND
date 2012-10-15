@@ -360,6 +360,44 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 		return $result;
 	}
 	
+	public function sheduleStripsToMultiOptions(Sunny_DataMapper_CollectionAbstract $collection = null, $exclude = array(), $result = array(), $level = 0)
+	{
+		if (null === $collection) {
+			return $result;
+		}
+	
+		foreach ($collection as $entity) {
+			if (!in_array($entity->id, $exclude)) {
+				$titleOffset = str_repeat('--', $level);
+	
+				$result[$entity->id] = $titleOffset . ' ' . $entity->lesson_number;
+				if (count($entity->getExtendChilds()) > 0) {
+					$result = $this->collectionToMultiOptions($entity->getExtendChilds(), $exclude, $result, $level + 1);
+				}
+			}
+		}
+	
+		return $result;
+	}
+	
+	public function timeToDb($string) 
+	{
+		$time = explode(':', $string);
+		if (count($time) == 2) {
+			return mktime((int) $time[0], (int) $time[1], 0, 1, 1, 1970);
+		}
+	}
+	
+	public function timeFromDb($string)
+	{
+		if (is_null($string) || empty($string)) {
+			return date("G:i", time());
+		}
+		
+		return date("G:i", $string);
+	}
+	
+	
 	/**
 	 * Making timestamp from string h:i:m d-m-Y
 	 * Enter description here ...
