@@ -434,7 +434,6 @@ class Sunny_Controller_AdminAction extends Zend_Controller_Action
 		if (is_null($string)) {
 			return time();
 		}
-	
 		$dateArray = explode('-', $string);
 	
 		if (count($dateArray) != 3) {
