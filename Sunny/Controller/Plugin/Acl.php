@@ -1,5 +1,13 @@
 <?php
 
+require_once 'Zend/Acl.php';
+
+require_once 'Zend/Auth.php';
+
+require_once 'Zend/Controller/Plugin/Abstract.php';
+
+require_once 'Zend/Controller/Request/Abstract.php';
+
 class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 {
 	const DEFAULT_ROLE = 'guest';
@@ -18,9 +26,9 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	 * @var array
 	 */
 	protected $_deniedPage = array(
-		'module'     => '',
-		'controller' => '',
-		'action'     => ''
+		'module'     => 'default',
+		'controller' => 'error',
+		'action'     => 'acl-error'
 	);
 	
 	/**
@@ -29,17 +37,6 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	 * @var string
 	 */
 	protected $_restrictedControllerPrefix = 'admin-';
-	
-	/**
-	 * Login page action
-	 * 
-	 * @var array
-	 */
-	protected $_loginPage = array(
-		'module'     => '',
-		'controller' => '',
-		'action'     => ''		
-	);
 	
 	/**
 	 * Flag of plugin previous execution is change request
@@ -60,7 +57,14 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	 * 
 	 * @var Zend_Cache_Core
 	 */
-	protected static $_cache;
+	//protected static $_cache;
+
+	public function __construct($options = null)
+	{
+		if (is_array($options)) {
+			
+		}
+	}
 	
 	public function setAcl(Zend_Acl $acl)
 	{
@@ -77,22 +81,14 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 		return $this->_acl;
 	}
 	
-	public function getCache()
+	/*public function getCache()
 	{
 		if (null !== self::$_cache && self::$_cache->test('Zend_Acl')) {
 			$this->_acl = self::$_cache->load('Zend_Acl');
 		}
 		
 		return $this;
-	}
-	
-	public function getCache()
-	{
-		$bootstrap = Zend_Controller_Front::getInstance()->getParam('bootstrap');
-		
-		if ($bootstrap instanceof Zend_Application_Bootstrap_BootstrapAbstract){}
-		$bootstrap->getResource('cachemanager');
-	}
+	}*/
 	
 	/**
 	 * (non-PHPdoc)
@@ -100,14 +96,12 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	 */
 	public function preDispatch(Zend_Controller_Request_Abstract $request)
 	{
-		$acl = $this->getAcl();
-		$recource = $request->getModuleName() . '/' . $request->getControllerName();
+		//$acl = $this->getAcl();
+		//$recource = $request->getModuleName() . '/' . $request->getControllerName();
 		
-		if (!Zend_Auth::getInstance()->hasIdentity()) {
-			$this->_setDispatched($request, $this->_deniedPage);
-		} else {
-			$this->_setDispatched($request, $this->_loginPage);
-		}
+		
+		
+		$this->_setDispatched($request, $this->_deniedPage);
 	}
 	
 	/**
@@ -117,7 +111,7 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	 * @param array   $resetParams
 	 * @param boolean $dispatchedFlag
 	 */
-	protected function _setDispatched(Zend_Controller_Request_Abstract $request, $resetParams, $dispatchedFlag = false)
+	protected function _setDispatched(Zend_Controller_Request_Abstract $request, $resetParams, $dispatchedFlag = true)
 	{
 		$originalRequest = clone $request;
 		$request->clearParams();
