@@ -90,18 +90,56 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 		return $this;
 	}*/
 	
+	protected function _buildAcl()
+	{
+		$groupsMapper = new Users_Model_Mapper_UsersGroups();
+		$groups = $groupsMapper->fetchAll();
+		
+		foreach ($groups as $role) {
+			$this->getAcl()->addRole('users_groups_' . $role->id);
+		}
+		
+		$permissionsMapper = new Users_Model_Mapper_UsersPermissions();
+		$permissions = $permissionsMapper->fetchAll();
+		foreach ($permissions as $resource) {
+			$this->getAcl()->addResource('users_permissions_' . $resource->id);
+		}
+		
+		$groupsPermissionsMapper = new Users_Model_Mapper_UsersGroupsPermissions();
+		$rules = $groupsPermissionsMapper->fetchAll(array(
+			'allow = ?' => 'YES'
+		));
+		foreach ($rules as $rule) {
+			$this->getAcl()->allow('users_groups_' . $rule->users_groups_id, 'users_permissions_' . $rule->users_permissions_id);
+		}
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Plugin_Abstract::preDispatch()
 	 */
 	public function preDispatch(Zend_Controller_Request_Abstract $request)
 	{
-		//$acl = $this->getAcl();
-		//$recource = $request->getModuleName() . '/' . $request->getControllerName();
+		$this->_buildAcl();
+		$acl = $this->getAcl();
 		
+		if (!Zend_Auth::getInstance()->hasIdentity()) {
+			$this->_setDispatched($request, $this->_deniedPage);
+			return;
+		}
 		
-		
-		$this->_setDispatched($request, $this->_deniedPage);
+		if (preg_match('/^admin/', $request->getControllerName())) {
+			$mapper = new Users_Model_Mapper_UsersPermissions();
+			$resource = $mapper->findResource($request->getModuleName() . '/' . $request->getControllerName());
+			
+			$user = Zend_Auth::getInstance()->getIdentity();
+			$role = $mapper->findRole($user);
+			
+			if (!$resource || !$role || !$acl->isAllowed('users_groups_' . $role->id, 'users_permissions_' . $resource->id)) {
+				$this->_setDispatched($request, $this->_deniedPage);
+				return;
+			}
+		}
 	}
 	
 	/**
@@ -115,6 +153,8 @@ class Sunny_Controller_Plugin_Acl extends Zend_Controller_Plugin_Abstract
 	{
 		$originalRequest = clone $request;
 		$request->clearParams();
+		
+		Zend_Controller_Action_HelperBroker::getStaticHelper('layout')->setLayout('admin-layout');
 		
 		$request->setModuleName($resetParams['module']);
 		$request->setControllerName($resetParams['controller']);
