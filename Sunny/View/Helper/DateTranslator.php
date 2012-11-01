@@ -61,7 +61,7 @@ class Sunny_View_Helper_DateTranslator extends Zend_View_Helper_Abstract
 			'en' => 'october'
 		),
 		'11' => array(
-			'uk' => 'листопаду',
+			'uk' => 'листопада',
 			'ru' => 'ноября',
 			'en' => 'november'
 		),
