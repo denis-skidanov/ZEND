@@ -67,6 +67,75 @@ class Sunny_Controller_Action extends Zend_Controller_Action
 	 */
 	protected $_session;
 	
+	protected static $_cache;
+	
+	protected $_useCache = true;
+	
+	public function setUseCache($flag = true)
+	{
+		$this->_useCache = (bool) $flag;
+		return $this;
+	}
+	
+	public function isUseCache()
+	{
+		$request = $this->getRequest();
+		
+		if ($request->isXmlHttpRequest() || $request->isPost() ||  null === self::getCache()) {
+			//return false;
+		}
+		
+		return $this->_useCache;
+	}
+	
+	public static function setCache(Zend_Cache_Core $obj)
+	{
+		self::$_cache = $obj;
+	}
+	
+	public static function getCache()
+	{
+		return self::$_cache;
+	}
+	
+	protected function _makeCacheId()
+	{
+		$request = $this->getRequest();
+		$params = $request->getParams();
+		
+		return 'CONTROLLER_CACHE_' . md5($this->view->url($params, null, true));
+	}
+	
+	public function preDispatch()
+	{
+		if (!$this->isUseCache()) {
+			return;
+		}
+		
+		if (!(self::getCache()->test($this->_makeCacheId()))) {
+			return;
+		}
+		
+		$data = self::getCache()->load($this->_makeCacheId());
+		
+		$this->getResponse()->setBody($data);
+		$this->getRequest()->setDispatched(true);
+		$this->_helper->viewRenderer->setNoRender();
+	}
+	
+	public function postDispatch()
+	{
+		if (!$this->isUseCache()) {
+			return;
+		}
+		
+		if (!(self::getCache()->test($this->_makeCacheId()))) {
+			$this->_helper->viewRenderer->postDispatch();
+			self::getCache()->save($this->getResponse()->getBody(), $this->_makeCacheId());
+		}
+	}
+	
+	
 	/**
 	 * Get controller session namespace
 	 * If undefined crete it
