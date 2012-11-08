@@ -117,8 +117,8 @@ class Sunny_DataMapper_MapperAbstract
      */
     public function __call($name, $arguments)
     {
-    	//$method = strtolower(substr($name, 6, 1)) . substr($name, 7);
-    	$method = lcfirst(substr($name, 6));
+    	$method = strtolower(substr($name, 6, 1)) . substr($name, 7);
+    	//$method = lcfirst(substr($name, 6));
     	if ('cached' == substr($name, 0, 6) && method_exists($this, $method) && null !== self::$_cache) {
     		$class = get_class($this);
     		$id    = $class . '_' . $method . '_' . md5(serialize($arguments));
