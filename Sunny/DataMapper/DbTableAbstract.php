@@ -127,6 +127,7 @@ class Sunny_DataMapper_DbTableAbstract extends Zend_Db_Table_Abstract
 	public function fetchAll($where = null, $order = null, $count = null, $offset = null, $columns = null)
 	{
 		$select = $this->createSelect($where, $order, $count, $offset, $columns);
+		//echo $select;
 		$rows =  $this->_fetch($select);
 		
 		return $rows;
